@@ -185,7 +185,7 @@ export const formatRecipeShareText = (recipe: any): string => {
     lines.push(`Nutrition: ${recipe.nutrition.calories} cal | P: ${recipe.nutrition.protein} | C: ${recipe.nutrition.carbs} | F: ${recipe.nutrition.fat}`);
   }
   if (recipe.sourceUrl) lines.push(`Recipe: ${recipe.sourceUrl}`);
-  lines.push('', 'Shared via Sous Chef GPT');
+  lines.push('', 'Shared via Pickle');
   return lines.join('\n');
 };
 
@@ -238,7 +238,7 @@ export const generateGoogleCalendarUrl = (
   if (recipe.sourceUrl) {
     descParts.push(`Recipe: ${recipe.sourceUrl}`);
   }
-  descParts.push('Planned with Sous Chef GPT');
+  descParts.push('Planned with Pickle');
 
   const params = new URLSearchParams({
     action: 'TEMPLATE',

@@ -37,7 +37,7 @@ export default function CtaSection({ ctaRef, onStartCooking }: CtaSectionProps) 
                 onClick={onStartCooking}
                 className="japandi-button bg-[#8B7355] text-white hover:bg-[#6B5740] text-lg px-10"
               >
-                Try Sous Chef Free
+                Try Pickle Free
               </Button>
             </div>
           </div>
@@ -49,8 +49,8 @@ export default function CtaSection({ ctaRef, onStartCooking }: CtaSectionProps) 
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="Sous Chef" className="w-8 h-8" />
-              <span className="font-bold text-lg text-[#1A1A1A]">Sous Chef</span>
+              <img src="/logo.png" alt="Pickle" className="w-8 h-8" />
+              <span className="font-bold text-lg text-[#1A1A1A]">Pickle</span>
             </div>
             <div className="flex items-center gap-6">
               <a href="#" className="text-sm text-[#6E6A60] hover:text-[#1A1A1A]">Privacy</a>
@@ -59,7 +59,7 @@ export default function CtaSection({ ctaRef, onStartCooking }: CtaSectionProps) 
             </div>
           </div>
           <p className="text-sm text-[#6E6A60] text-center">
-            Sous Chef is a free service. We earn commissions through affiliate links at no extra cost to you.
+            Pickle is a free service. We earn commissions through affiliate links at no extra cost to you.
           </p>
           <p className="text-xs text-[#6E6A60]/70 text-center mt-2">
             From everyday home cook to professional chef

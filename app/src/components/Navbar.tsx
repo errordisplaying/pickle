@@ -39,7 +39,7 @@ export default function Navbar({
   return (
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 flex items-center justify-between bg-[#F4F2EA]/80 backdrop-blur-md h-16">
         <div className="flex items-center">
-          <img src="/logo.png" alt="Sous Chef" className="h-24 w-auto -mt-1 -mb-8 drop-shadow-sm" />
+          <img src="/logo.png" alt="Pickle" className="h-24 w-auto -mt-1 -mb-8 drop-shadow-sm" />
         </div>
         <div className="hidden md:flex items-center gap-8">
           <button onClick={() => setMode('recipe')} className={`text-sm font-medium transition-colors ${mode === 'recipe' ? 'text-[#8B7355]' : 'text-[#6E6A60] hover:text-[#1A1A1A]'}`}>

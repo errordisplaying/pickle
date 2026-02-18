@@ -641,7 +641,7 @@ function App() {
 
   const shareMealPlan = async () => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const lines: string[] = ['\u{1F37D}\uFE0F My Meal Plan — Sous Chef GPT', ''];
+    const lines: string[] = ['\u{1F37D}\uFE0F My Meal Plan — Pickle', ''];
     days.forEach(day => {
       const dayMeals = plannerMeals[day];
       const slots = (['breakfast', 'lunch', 'dinner'] as const).filter(s => dayMeals?.[s]);
@@ -657,7 +657,7 @@ function App() {
     if (weeklyN.calories > 0) {
       lines.push(`Weekly: ${weeklyN.calories} cal | ${weeklyN.protein}g P | ${weeklyN.carbs}g C | ${weeklyN.fat}g F`);
     }
-    lines.push('', 'Planned with Sous Chef GPT');
+    lines.push('', 'Planned with Pickle');
     const daysPlanned = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].filter(day => {
       const d = plannerMeals[day];
       return d?.breakfast || d?.lunch || d?.dinner;

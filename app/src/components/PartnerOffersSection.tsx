@@ -18,7 +18,7 @@ export default function PartnerOffersSection() {
             </div>
             <div className="p-6 text-white">
               <h3 className="font-bold text-xl mb-2">Get 20% Off Your First Meal Kit</h3>
-              <p className="text-sm opacity-80 mb-4 leading-relaxed">Fresh, pre-portioned ingredients delivered straight to your door. Skip the grocery store and start cooking restaurant-quality meals tonight. Use code SOUSCHEF20.</p>
+              <p className="text-sm opacity-80 mb-4 leading-relaxed">Fresh, pre-portioned ingredients delivered straight to your door. Skip the grocery store and start cooking restaurant-quality meals tonight. Use code PICKLE20.</p>
               <Button className="bg-white text-[#5C4A3A] rounded-full hover:bg-white/90">
                 Claim Offer <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
