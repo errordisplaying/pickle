@@ -1,0 +1,125 @@
+import { X, ShoppingCart, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import type { ShoppingItem, IngredientCategory } from '@/types';
+
+interface ShoppingListOverlayProps {
+  shoppingList: ShoppingItem[];
+  onToggleItem: (id: string) => void;
+  onGenerateFromPlan: () => void;
+  onClearPurchased: () => void;
+  onClearAll: () => void;
+  onOpenPlanner: () => void;
+  onClose: () => void;
+}
+
+export default function ShoppingListOverlay({
+  shoppingList,
+  onToggleItem,
+  onGenerateFromPlan,
+  onClearPurchased,
+  onClearAll,
+  onOpenPlanner,
+  onClose,
+}: ShoppingListOverlayProps) {
+  return (
+    <div className="fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[203] flex flex-col overflow-y-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between px-8 py-5 border-b border-black/5">
+        <div className="flex items-center gap-3">
+          <ShoppingCart className="w-6 h-6 text-[#8B7355]" />
+          <h2 className="text-2xl font-black uppercase text-[#1A1A1A]">Shopping List</h2>
+          <span className="text-sm text-[#6E6A60]">
+            ({shoppingList.filter(i => !i.purchased).length} remaining)
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button onClick={onGenerateFromPlan} className="bg-[#8B7355] text-white hover:bg-[#6B5740] rounded-full text-xs" size="sm">
+            Generate from Plan
+          </Button>
+          {shoppingList.some(i => i.purchased) && (
+            <Button onClick={onClearPurchased} variant="outline" className="rounded-full text-xs" size="sm">
+              Clear Purchased
+            </Button>
+          )}
+          {shoppingList.length > 0 && (
+            <Button onClick={onClearAll} variant="outline" className="rounded-full text-xs text-red-500" size="sm">
+              Clear All
+            </Button>
+          )}
+          <Button onClick={onClose} variant="outline" className="rounded-full h-10 w-10 p-0 flex items-center justify-center">
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 px-8 py-6">
+        <div className="max-w-3xl mx-auto">
+          {shoppingList.length === 0 ? (
+            <div className="text-center py-20">
+              <ShoppingCart className="w-16 h-16 text-[#E8E6DC] mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-[#1A1A1A] mb-2">No items yet</h3>
+              <p className="text-[#6E6A60] mb-6">Add meals to your planner, then generate a shopping list.</p>
+              <Button onClick={onOpenPlanner} className="bg-[#8B7355] text-white hover:bg-[#6B5740] rounded-full">
+                Open Meal Planner
+              </Button>
+            </div>
+          ) : (
+            <>
+              {/* Progress bar */}
+              <div className="mb-6">
+                <div className="flex justify-between text-xs text-[#6E6A60] mb-1.5">
+                  <span>{shoppingList.filter(i => i.purchased).length} of {shoppingList.length} items</span>
+                  <span>{Math.round((shoppingList.filter(i => i.purchased).length / shoppingList.length) * 100)}% complete</span>
+                </div>
+                <div className="h-2 bg-[#E8E6DC] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                    style={{ width: `${(shoppingList.filter(i => i.purchased).length / shoppingList.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {(['Produce', 'Protein', 'Dairy', 'Pantry', 'Spices', 'Other'] as IngredientCategory[]).map(category => {
+                const items = shoppingList.filter(i => i.category === category);
+                if (items.length === 0) return null;
+                return (
+                  <div key={category} className="mb-6">
+                    <h3 className="text-xs font-bold text-[#8B7355] uppercase tracking-wider mb-2 flex items-center gap-2">
+                      <span>{category === 'Produce' ? '🥬' : category === 'Protein' ? '🥩' : category === 'Dairy' ? '🥛' : category === 'Pantry' ? '🫙' : category === 'Spices' ? '🌿' : '📦'}</span>
+                      {category}
+                      <span className="text-[#6E6A60] font-normal">({items.filter(i => !i.purchased).length})</span>
+                    </h3>
+                    <div className="space-y-1.5">
+                      {items.map(item => (
+                        <button
+                          key={item.id}
+                          onClick={() => onToggleItem(item.id)}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${
+                            item.purchased ? 'bg-[#E8E6DC]/50 opacity-60' : 'bg-white hover:bg-[#F4F2EA]'
+                          } border border-black/5`}
+                        >
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                            item.purchased ? 'bg-emerald-500 border-emerald-500' : 'border-[#8B7355]/30'
+                          }`}>
+                            {item.purchased && <Check className="w-3 h-3 text-white" />}
+                          </div>
+                          <span className={`text-sm font-medium flex-1 text-left ${item.purchased ? 'line-through text-[#6E6A60]' : 'text-[#1A1A1A]'}`}>
+                            {item.name}
+                          </span>
+                          <span className="text-[10px] text-[#6E6A60]">
+                            {item.fromRecipes.length} recipe{item.fromRecipes.length > 1 ? 's' : ''}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
