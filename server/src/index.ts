@@ -30,7 +30,7 @@ app.use('/api/analytics', analyticsRoutes);
 // Root endpoint
 app.get('/', (_req, res) => {
   res.json({
-    name: 'Pickle API',
+    name: 'Chickpea API',
     version: '1.0.0',
     endpoints: {
       'POST /api/recipes': 'Search and scrape recipes from top cooking websites',
@@ -45,7 +45,7 @@ app.get('/', (_req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`\n🥒 Pickle API Server running on http://localhost:${PORT}`);
+  console.log(`\n🫘 Chickpea API Server running on http://localhost:${PORT}`);
   console.log(`   POST /api/recipes           — Search for recipes`);
   console.log(`   GET  /api/health            — Health check`);
   console.log(`   GET  /api/scraper-status    — Scraper diagnostics`);

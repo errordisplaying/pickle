@@ -159,7 +159,7 @@ export default function HeroSection({
       <div className="hero-image absolute left-[6vw] top-[14vh] w-[58vw] h-[72vh] japandi-card">
         <img
           src="/hero_search_preview.jpg"
-          alt="Pickle search preview"
+          alt="Chickpea search preview"
           className="w-full h-full object-cover image-grade"
         />
         {/* Gradient overlay for text readability */}
