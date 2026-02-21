@@ -185,7 +185,7 @@ export const formatRecipeShareText = (recipe: any): string => {
     lines.push(`Nutrition: ${recipe.nutrition.calories} cal | P: ${recipe.nutrition.protein} | C: ${recipe.nutrition.carbs} | F: ${recipe.nutrition.fat}`);
   }
   if (recipe.sourceUrl) lines.push(`Recipe: ${recipe.sourceUrl}`);
-  lines.push('', 'Shared via Chickpea');
+  lines.push('', 'Shared via chickpea');
   return lines.join('\n');
 };
 
@@ -238,7 +238,7 @@ export const generateGoogleCalendarUrl = (
   if (recipe.sourceUrl) {
     descParts.push(`Recipe: ${recipe.sourceUrl}`);
   }
-  descParts.push('Planned with Chickpea');
+  descParts.push('Planned with chickpea');
 
   const params = new URLSearchParams({
     action: 'TEMPLATE',

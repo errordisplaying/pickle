@@ -37,7 +37,7 @@ export default function CtaSection({ ctaRef, onStartCooking }: CtaSectionProps) 
                 onClick={onStartCooking}
                 className="japandi-button bg-[#8B7355] text-white hover:bg-[#6B5740] text-lg px-10"
               >
-                Try Chickpea Free
+                Try chickpea Free
               </Button>
             </div>
           </div>
@@ -49,7 +49,7 @@ export default function CtaSection({ ctaRef, onStartCooking }: CtaSectionProps) 
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <svg width="32" height="32" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Chickpea logo">
+              <svg width="32" height="32" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="chickpea logo">
                 <ellipse cx="32" cy="34" rx="26" ry="24" fill="#D4A96A" />
                 <ellipse cx="32" cy="34" rx="26" ry="24" fill="url(#chickpea-grad-sm)" />
                 <path d="M32 14 C30 22, 26 30, 28 54" stroke="#C49555" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.7" />
@@ -63,7 +63,7 @@ export default function CtaSection({ ctaRef, onStartCooking }: CtaSectionProps) 
                   </radialGradient>
                 </defs>
               </svg>
-              <span className="font-bold text-lg text-[#1A1A1A]">Chickpea</span>
+              <span className="font-bold text-lg text-[#1A1A1A]">chickpea</span>
             </div>
             <div className="flex items-center gap-6">
               <a href="#" className="text-sm text-[#6E6A60] hover:text-[#1A1A1A]">Privacy</a>
@@ -72,7 +72,7 @@ export default function CtaSection({ ctaRef, onStartCooking }: CtaSectionProps) 
             </div>
           </div>
           <p className="text-sm text-[#6E6A60] text-center">
-            Chickpea is a free service. We earn commissions through affiliate links at no extra cost to you.
+            chickpea is a free service. We earn commissions through affiliate links at no extra cost to you.
           </p>
           <p className="text-xs text-[#6E6A60]/70 text-center mt-2">
             From everyday home cook to professional chef

@@ -39,7 +39,7 @@ export default function Navbar({
   return (
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 flex items-center justify-between bg-[#F4F2EA]/80 backdrop-blur-md h-16">
         <div className="flex items-center gap-2">
-          <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-sm" aria-label="Chickpea logo">
+          <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-sm" aria-label="chickpea logo">
             <ellipse cx="32" cy="34" rx="26" ry="24" fill="#D4A96A" />
             <ellipse cx="32" cy="34" rx="26" ry="24" fill="url(#chickpea-grad)" />
             <path d="M32 14 C30 22, 26 30, 28 54" stroke="#C49555" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.7" />
@@ -53,7 +53,7 @@ export default function Navbar({
               </radialGradient>
             </defs>
           </svg>
-          <span className="font-bold text-lg text-[#1A1A1A] tracking-tight">Chickpea</span>
+          <span className="font-bold text-lg text-[#1A1A1A] tracking-tight">chickpea</span>
         </div>
         <div className="hidden md:flex items-center gap-8">
           <button onClick={() => setMode('recipe')} className={`text-sm font-medium transition-colors ${mode === 'recipe' ? 'text-[#8B7355]' : 'text-[#6E6A60] hover:text-[#1A1A1A]'}`}>
