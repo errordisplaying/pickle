@@ -1,4 +1,5 @@
-import { Calendar, Heart, User, ShoppingCart, Target, LogOut, Cloud, CloudOff } from 'lucide-react';
+import { useState } from 'react';
+import { Calendar, Heart, User, ShoppingCart, Target, LogOut, Cloud, CloudOff, Menu, X } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 import type { SavedRecipe, ShoppingItem, UserProfile } from '@/types';
@@ -36,7 +37,12 @@ export default function Navbar({
   onSyncToCloud,
   onSignOut,
 }: NavbarProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const closeMobile = () => setMobileMenuOpen(false);
+
   return (
+    <>
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 flex items-center justify-between bg-[#F4F2EA]/80 backdrop-blur-md h-16">
         <div className="flex items-center gap-2">
           <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-sm" aria-label="chickpea logo">
@@ -55,6 +61,8 @@ export default function Navbar({
           </svg>
           <span className="font-bold text-lg text-[#1A1A1A] tracking-tight">chickpea</span>
         </div>
+
+        {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
           <button onClick={() => setMode('recipe')} className={`text-sm font-medium transition-colors ${mode === 'recipe' ? 'text-[#8B7355]' : 'text-[#6E6A60] hover:text-[#1A1A1A]'}`}>
             Recipes
@@ -130,6 +138,114 @@ export default function Navbar({
             </button>
           )}
         </div>
+
+        {/* Mobile Hamburger Button */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden text-[#6E6A60] hover:text-[#1A1A1A] transition-colors p-1"
+          aria-label="Toggle menu"
+        >
+          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={closeMobile} />
+
+          {/* Menu Panel */}
+          <div className="absolute top-16 right-0 w-64 bg-[#F4F2EA] border-l border-black/5 shadow-xl rounded-bl-3xl overflow-hidden animate-in slide-in-from-right duration-200">
+            <div className="p-4 space-y-1">
+              {/* Mode Buttons */}
+              <button
+                onClick={() => { setMode('recipe'); closeMobile(); }}
+                className={`w-full text-left px-4 py-3 rounded-2xl text-sm font-medium transition-colors ${mode === 'recipe' ? 'bg-[#8B7355] text-white' : 'text-[#6E6A60] hover:bg-[#E8E6DC]'}`}
+              >
+                Recipes
+              </button>
+              <button
+                onClick={() => { setMode('testKitchen'); closeMobile(); }}
+                className={`w-full text-left px-4 py-3 rounded-2xl text-sm font-medium transition-colors ${mode === 'testKitchen' ? 'bg-[#8B7355] text-white' : 'text-[#6E6A60] hover:bg-[#E8E6DC]'}`}
+              >
+                Test Kitchen
+              </button>
+
+              <div className="border-t border-black/5 my-2" />
+
+              {/* Tool Buttons */}
+              <button
+                onClick={() => { onOpenPlanner(); closeMobile(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium text-[#6E6A60] hover:bg-[#E8E6DC] transition-colors"
+              >
+                <Calendar className="w-5 h-5" /> Meal Planner
+              </button>
+              <button
+                onClick={() => { onOpenShoppingList(); closeMobile(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium text-[#6E6A60] hover:bg-[#E8E6DC] transition-colors relative"
+              >
+                <ShoppingCart className="w-5 h-5" /> Shopping List
+                {shoppingList.filter(i => !i.purchased).length > 0 && (
+                  <span className="ml-auto w-5 h-5 bg-[#8B7355] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {shoppingList.filter(i => !i.purchased).length}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => { onOpenFavorites(); closeMobile(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium text-[#6E6A60] hover:bg-[#E8E6DC] transition-colors"
+              >
+                <Heart className={`w-5 h-5 ${favorites.length > 0 ? 'fill-red-400 text-red-400' : ''}`} /> Favorites
+                {favorites.length > 0 && (
+                  <span className="ml-auto w-5 h-5 bg-red-400 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {favorites.length}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => { onOpenGoalsSettings(); closeMobile(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium text-[#6E6A60] hover:bg-[#E8E6DC] transition-colors"
+              >
+                <Target className="w-5 h-5" /> Nutrition Goals
+              </button>
+
+              <div className="border-t border-black/5 my-2" />
+
+              {/* Auth */}
+              {session?.user ? (
+                <>
+                  <div className="px-4 py-2">
+                    <p className="text-xs font-semibold text-[#1A1A1A] truncate">{userProfile?.display_name || 'User'}</p>
+                    <p className="text-[10px] text-[#6E6A60] truncate">{session.user.email}</p>
+                  </div>
+                  <button
+                    onClick={() => { onSyncToCloud(); closeMobile(); }}
+                    disabled={cloudSyncing}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium text-[#6E6A60] hover:bg-[#E8E6DC] transition-colors"
+                  >
+                    {cloudSyncing ? <Cloud className="w-5 h-5 animate-pulse" /> : <Cloud className="w-5 h-5" />}
+                    {cloudSyncing ? 'Syncing...' : 'Sync to Cloud'}
+                  </button>
+                  <button
+                    onClick={() => { onSignOut(); closeMobile(); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="w-5 h-5" /> Sign Out
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => { onOpenAuth(); closeMobile(); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium text-[#6E6A60] hover:bg-[#E8E6DC] transition-colors"
+                >
+                  <User className="w-5 h-5" /> Sign In
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

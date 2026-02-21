@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import type { SavedRecipe, DietaryFilter } from '@/types';
 import { DIETARY_FILTERS, SERVING_MULTIPLIERS } from '@/constants';
@@ -418,6 +419,35 @@ export default function HeroSection({
           </div>
         )}
       </div>
+
+      {/* Loading Skeleton Overlay */}
+      {loading && !recipeData && (
+        <div className="absolute inset-0 bg-[#F4F2EA]/95 backdrop-blur-sm z-30 flex items-start justify-center overflow-y-auto py-8 px-4">
+          <div className="max-w-6xl w-full">
+            <div className="mb-8 py-4 px-2">
+              <Skeleton className="h-9 w-72 bg-[#E8E6DC] rounded-2xl mb-2" />
+              <Skeleton className="h-4 w-48 bg-[#E8E6DC] rounded-xl" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="bg-white rounded-[28px] overflow-hidden shadow-md">
+                  <Skeleton className="h-48 w-full bg-[#E8E6DC]" style={{ borderRadius: 0 }} />
+                  <div className="p-5 space-y-3">
+                    <Skeleton className="h-5 w-3/4 bg-[#E8E6DC] rounded-xl" />
+                    <Skeleton className="h-3 w-full bg-[#E8E6DC] rounded-lg" />
+                    <Skeleton className="h-3 w-5/6 bg-[#E8E6DC] rounded-lg" />
+                    <div className="flex gap-3 pt-2">
+                      <Skeleton className="h-6 w-16 bg-[#E8E6DC] rounded-full" />
+                      <Skeleton className="h-6 w-20 bg-[#E8E6DC] rounded-full" />
+                      <Skeleton className="h-6 w-14 bg-[#E8E6DC] rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Recipe Results Overlay */}
       {recipeData && (
