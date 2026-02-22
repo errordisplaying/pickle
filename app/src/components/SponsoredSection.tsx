@@ -27,12 +27,12 @@ export default function SponsoredSection({ title = 'Sponsored', className = '' }
                 </div>
               </div>
               <div className="p-5">
-                <p className="text-xs text-[#8B7355] font-semibold uppercase tracking-wider mb-1">{product.brand}</p>
+                <p className="text-xs text-[#C49A5C] font-semibold uppercase tracking-wider mb-1">{product.brand}</p>
                 <h3 className="font-bold text-lg text-[#1A1A1A] mb-2">{product.name}</h3>
                 <p className="text-sm text-[#6E6A60] leading-relaxed mb-4">{product.description}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-[#8B7355] font-bold text-lg">{product.price}</span>
-                  <button className="flex items-center gap-2 text-sm font-semibold text-[#8B7355] hover:gap-3 transition-all">
+                  <span className="text-[#C49A5C] font-bold text-lg">{product.price}</span>
+                  <button className="flex items-center gap-2 text-sm font-semibold text-[#C49A5C] hover:gap-3 transition-all">
                     {product.cta} <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

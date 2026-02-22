@@ -790,10 +790,10 @@ function App() {
         className="fixed right-5 top-1/2 -translate-y-1/2 z-[100] group flex items-center gap-2 cursor-pointer"
         aria-label={`Go to ${nextSectionLabel}`}
       >
-        <span className="px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-md border border-[#8B7355]/15 text-[11px] font-semibold text-[#8B7355] opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 whitespace-nowrap shadow-sm">
+        <span className="px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-md border border-[#C49A5C]/15 text-[11px] font-semibold text-[#C49A5C] opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 whitespace-nowrap shadow-sm">
           {nextSectionLabel}
         </span>
-        <div className="w-11 h-11 rounded-full bg-white/50 backdrop-blur-md border border-[#8B7355]/20 text-[#8B7355] shadow-sm flex items-center justify-center transition-all duration-300 group-hover:bg-white/70 group-hover:shadow-md group-hover:border-[#8B7355]/40 animate-bounce-subtle">
+        <div className="w-11 h-11 rounded-full bg-white/50 backdrop-blur-md border border-[#C49A5C]/20 text-[#C49A5C] shadow-sm flex items-center justify-center transition-all duration-300 group-hover:bg-white/70 group-hover:shadow-md group-hover:border-[#C49A5C]/40 animate-bounce-subtle">
           <ChevronDown className="w-5 h-5" />
         </div>
       </button>

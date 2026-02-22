@@ -74,8 +74,8 @@ export default function PlannerOverlay({
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-black/5 flex-shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#8B7355]/10 rounded-2xl flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-[#8B7355]" />
+              <div className="w-10 h-10 bg-[#C49A5C]/10 rounded-2xl flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-[#C49A5C]" />
               </div>
               <div>
                 <h2 className="text-xl font-black uppercase text-[#1A1A1A] tracking-tight">Meal Planner</h2>
@@ -108,7 +108,7 @@ export default function PlannerOverlay({
               <div className="p-4 border-b border-black/5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-[#8B7355]" />
+                    <BookOpen className="w-4 h-4 text-[#C49A5C]" />
                     <h3 className="font-bold text-sm text-[#1A1A1A]">Recipe Library</h3>
                   </div>
                   <button onClick={() => setPlannerSidebarOpen(false)} className="lg:hidden w-7 h-7 rounded-full bg-[#F4F2EA] flex items-center justify-center">
@@ -134,7 +134,7 @@ export default function PlannerOverlay({
                     onClick={() => setPlannerSidebarTab(tab)}
                     className={`flex-1 py-2.5 text-xs font-semibold capitalize transition-colors ${
                       plannerSidebarTab === tab
-                        ? 'text-[#8B7355] border-b-2 border-[#8B7355]'
+                        ? 'text-[#C49A5C] border-b-2 border-[#C49A5C]'
                         : 'text-[#6E6A60] hover:text-[#1A1A1A]'
                     }`}
                   >
@@ -165,7 +165,7 @@ export default function PlannerOverlay({
                       onClick={() => setRecipeToAssign(recipe)}
                       className={`w-full flex items-center gap-3 p-2.5 rounded-2xl text-left transition-all duration-150 ${
                         recipeToAssign?.name === recipe.name
-                          ? 'bg-[#8B7355]/15 border border-[#8B7355]/30 shadow-sm'
+                          ? 'bg-[#C49A5C]/15 border border-[#C49A5C]/30 shadow-sm'
                           : 'hover:bg-[#F4F2EA] border border-transparent'
                       }`}
                     >
@@ -173,7 +173,7 @@ export default function PlannerOverlay({
                         <img src={recipe.image} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
                       ) : (
                         <div className="w-12 h-12 rounded-xl bg-[#F4F2EA] flex items-center justify-center flex-shrink-0">
-                          <UtensilsCrossed className="w-5 h-5 text-[#8B7355]" />
+                          <UtensilsCrossed className="w-5 h-5 text-[#C49A5C]" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -196,7 +196,7 @@ export default function PlannerOverlay({
               {/* Mobile Sidebar Toggle */}
               <button
                 onClick={() => setPlannerSidebarOpen(true)}
-                className="lg:hidden flex items-center gap-1.5 text-xs text-[#8B7355] font-semibold px-4 py-2 bg-[#8B7355]/8 rounded-full mb-4 hover:bg-[#8B7355]/15 transition-colors"
+                className="lg:hidden flex items-center gap-1.5 text-xs text-[#C49A5C] font-semibold px-4 py-2 bg-[#C49A5C]/8 rounded-full mb-4 hover:bg-[#C49A5C]/15 transition-colors"
               >
                 <BookOpen className="w-3.5 h-3.5" /> Recipe Library
               </button>
@@ -213,13 +213,13 @@ export default function PlannerOverlay({
                       onClick={() => setPlannerActiveDay(day)}
                       className={`flex-1 min-w-[72px] py-4 px-3 rounded-2xl font-semibold text-sm transition-all duration-200 relative group ${
                         isActive
-                          ? 'bg-[#8B7355] text-white shadow-lg shadow-[#8B7355]/20'
+                          ? 'bg-[#C49A5C] text-white shadow-lg shadow-[#C49A5C]/20'
                           : 'bg-white text-[#1A1A1A] hover:bg-[#E8E6DC] border border-black/5'
                       }`}
                     >
                       <span className="block text-base font-bold">{day}</span>
                       {filledCount > 0 && (
-                        <span className={`text-[10px] mt-1 block ${isActive ? 'text-white/80' : 'text-[#8B7355]'}`}>
+                        <span className={`text-[10px] mt-1 block ${isActive ? 'text-white/80' : 'text-[#C49A5C]'}`}>
                           {filledCount}/3 meals
                         </span>
                       )}
@@ -229,7 +229,7 @@ export default function PlannerOverlay({
                             key={slot}
                             className={`w-1.5 h-1.5 rounded-full ${
                               dayMeals?.[slot]
-                                ? isActive ? 'bg-white' : 'bg-[#8B7355]'
+                                ? isActive ? 'bg-white' : 'bg-[#C49A5C]'
                                 : isActive ? 'bg-white/30' : 'bg-black/10'
                             }`}
                           />
@@ -239,7 +239,7 @@ export default function PlannerOverlay({
                         <button
                           onClick={(e) => { e.stopPropagation(); onClearPlannerDay(day); }}
                           className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${
-                            isActive ? 'bg-white text-[#8B7355]' : 'bg-[#8B7355] text-white'
+                            isActive ? 'bg-white text-[#C49A5C]' : 'bg-[#C49A5C] text-white'
                           }`}
                           title="Clear day"
                         >
@@ -253,7 +253,7 @@ export default function PlannerOverlay({
 
               {/* Recipe Assignment Banner */}
               {recipeToAssign && (
-                <div className="bg-[#8B7355]/10 border border-[#8B7355]/20 rounded-2xl p-4 mb-5 flex items-center justify-between">
+                <div className="bg-[#C49A5C]/10 border border-[#C49A5C]/20 rounded-2xl p-4 mb-5 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {recipeToAssign.image && (
                       <img src={recipeToAssign.image} alt="" className="w-12 h-12 rounded-xl object-cover" />
@@ -327,7 +327,7 @@ export default function PlannerOverlay({
                                 href={generateGoogleCalendarUrl(recipe, mealType, plannerActiveDay)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-1.5 text-xs text-[#8B7355] hover:text-[#6B5740] font-medium px-3 py-1.5 bg-[#8B7355]/8 rounded-full transition-colors"
+                                className="flex items-center gap-1.5 text-xs text-[#C49A5C] hover:text-[#8B6F3C] font-medium px-3 py-1.5 bg-[#C49A5C]/8 rounded-full transition-colors"
                               >
                                 <Calendar className="w-3.5 h-3.5" /> Add to Calendar
                               </a>
@@ -344,7 +344,7 @@ export default function PlannerOverlay({
                         /* ── Empty + Assigning ── */
                         <button
                           onClick={() => onAddRecipeToPlanner(recipeToAssign, plannerActiveDay, mealType)}
-                          className="w-full bg-white rounded-[24px] overflow-hidden shadow-sm border-2 border-dashed border-[#8B7355] hover:bg-[#8B7355]/5 transition-colors cursor-pointer"
+                          className="w-full bg-white rounded-[24px] overflow-hidden shadow-sm border-2 border-dashed border-[#C49A5C] hover:bg-[#C49A5C]/5 transition-colors cursor-pointer"
                         >
                           <div className="flex items-center gap-2 px-5 pt-4 pb-2">
                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm ${
@@ -357,8 +357,8 @@ export default function PlannerOverlay({
                             <h3 className="font-bold text-[#1A1A1A] capitalize text-sm">{mealType}</h3>
                           </div>
                           <div className="flex flex-col items-center py-8 px-5">
-                            <Plus className="w-8 h-8 text-[#8B7355] mb-2" />
-                            <p className="text-sm font-semibold text-[#8B7355]">Add "{toTitleCase(recipeToAssign.name)}"</p>
+                            <Plus className="w-8 h-8 text-[#C49A5C] mb-2" />
+                            <p className="text-sm font-semibold text-[#C49A5C]">Add "{toTitleCase(recipeToAssign.name)}"</p>
                             <p className="text-xs text-[#6E6A60] mt-1">Tap to assign to {mealType}</p>
                           </div>
                         </button>
@@ -377,7 +377,7 @@ export default function PlannerOverlay({
                           </div>
                           <div className="flex flex-col items-center py-8 px-5">
                             <div className="w-14 h-14 rounded-2xl bg-[#F4F2EA] flex items-center justify-center mb-3">
-                              <Plus className="w-6 h-6 text-[#8B7355]/40" />
+                              <Plus className="w-6 h-6 text-[#C49A5C]/40" />
                             </div>
                             <p className="text-sm text-[#6E6A60]">Add a meal</p>
                             <p className="text-[11px] text-[#6E6A60]/60 mt-1">Select from the Recipe Library</p>
@@ -397,26 +397,26 @@ export default function PlannerOverlay({
                 );
                 if (!hasMeals) return null;
                 return (
-                  <div className="bg-gradient-to-r from-[#8B7355]/10 to-[#6B5740]/10 rounded-[20px] p-5 border border-[#8B7355]/15">
+                  <div className="bg-gradient-to-r from-[#C49A5C]/10 to-[#8B6F3C]/10 rounded-[20px] p-5 border border-[#C49A5C]/15">
                     <div className="flex items-center gap-2 mb-3">
-                      <Flame className="w-4 h-4 text-[#8B7355]" />
+                      <Flame className="w-4 h-4 text-[#C49A5C]" />
                       <h4 className="font-bold text-sm text-[#1A1A1A]">{plannerActiveDay}'s Nutrition</h4>
                     </div>
                     <div className="grid grid-cols-4 gap-3">
                       <div className="text-center bg-white/70 rounded-2xl py-3 px-2">
-                        <p className="text-xl font-black text-[#8B7355]">{dayNutrition.calories}</p>
+                        <p className="text-xl font-black text-[#C49A5C]">{dayNutrition.calories}</p>
                         <p className="text-[10px] text-[#6E6A60] font-medium uppercase tracking-wider mt-0.5">Calories</p>
                       </div>
                       <div className="text-center bg-white/70 rounded-2xl py-3 px-2">
-                        <p className="text-xl font-black text-[#6B5740]">{dayNutrition.protein}</p>
+                        <p className="text-xl font-black text-[#8B6F3C]">{dayNutrition.protein}</p>
                         <p className="text-[10px] text-[#6E6A60] font-medium uppercase tracking-wider mt-0.5">Protein</p>
                       </div>
                       <div className="text-center bg-white/70 rounded-2xl py-3 px-2">
-                        <p className="text-xl font-black text-[#6B5740]">{dayNutrition.carbs}</p>
+                        <p className="text-xl font-black text-[#8B6F3C]">{dayNutrition.carbs}</p>
                         <p className="text-[10px] text-[#6E6A60] font-medium uppercase tracking-wider mt-0.5">Carbs</p>
                       </div>
                       <div className="text-center bg-white/70 rounded-2xl py-3 px-2">
-                        <p className="text-xl font-black text-[#6B5740]">{dayNutrition.fat}</p>
+                        <p className="text-xl font-black text-[#8B6F3C]">{dayNutrition.fat}</p>
                         <p className="text-[10px] text-[#6E6A60] font-medium uppercase tracking-wider mt-0.5">Fat</p>
                       </div>
                     </div>
@@ -456,7 +456,7 @@ export default function PlannerOverlay({
                       <div
                         key={day}
                         className={`rounded-2xl p-3 text-center cursor-pointer transition-all ${
-                          plannerActiveDay === day ? 'bg-[#8B7355] text-white' : 'bg-[#F4F2EA]'
+                          plannerActiveDay === day ? 'bg-[#C49A5C] text-white' : 'bg-[#F4F2EA]'
                         }`}
                         onClick={() => setPlannerActiveDay(day)}
                       >
@@ -467,7 +467,7 @@ export default function PlannerOverlay({
                               key={meal}
                               className={`w-2 h-2 rounded-full mx-auto ${
                                 dayMeals?.[meal]
-                                  ? plannerActiveDay === day ? 'bg-white' : 'bg-[#8B7355]'
+                                  ? plannerActiveDay === day ? 'bg-white' : 'bg-[#C49A5C]'
                                   : plannerActiveDay === day ? 'bg-white/30' : 'bg-black/10'
                               }`}
                             />
@@ -475,7 +475,7 @@ export default function PlannerOverlay({
                         </div>
                         {dayCals > 0 && (
                           <p className={`text-[10px] font-semibold mt-1.5 ${
-                            plannerActiveDay === day ? 'text-white/80' : 'text-[#8B7355]'
+                            plannerActiveDay === day ? 'text-white/80' : 'text-[#C49A5C]'
                           }`}>
                             {dayCals}
                             <span className="text-[8px] ml-0.5">cal</span>
@@ -502,32 +502,32 @@ export default function PlannerOverlay({
                   return (
                     <div className="mt-5 pt-5 border-t border-black/5">
                       <div className="flex items-center gap-2 mb-3">
-                        <Flame className="w-4 h-4 text-[#8B7355]" />
+                        <Flame className="w-4 h-4 text-[#C49A5C]" />
                         <h4 className="font-bold text-sm text-[#1A1A1A]">Weekly Summary</h4>
                         <span className="text-[10px] text-[#6E6A60] ml-auto">{daysWithMeals} day{daysWithMeals !== 1 ? 's' : ''} planned</span>
                       </div>
                       <div className="grid grid-cols-4 gap-3 mb-3">
                         <div className="text-center bg-[#F4F2EA] rounded-2xl py-2.5 px-2">
-                          <p className="text-lg font-black text-[#8B7355]">{weeklyNutrition.calories.toLocaleString()}</p>
+                          <p className="text-lg font-black text-[#C49A5C]">{weeklyNutrition.calories.toLocaleString()}</p>
                           <p className="text-[10px] text-[#6E6A60] font-medium uppercase tracking-wider">Total Cal</p>
                         </div>
                         <div className="text-center bg-[#F4F2EA] rounded-2xl py-2.5 px-2">
-                          <p className="text-lg font-black text-[#6B5740]">{weeklyNutrition.protein}</p>
+                          <p className="text-lg font-black text-[#8B6F3C]">{weeklyNutrition.protein}</p>
                           <p className="text-[10px] text-[#6E6A60] font-medium uppercase tracking-wider">Protein</p>
                         </div>
                         <div className="text-center bg-[#F4F2EA] rounded-2xl py-2.5 px-2">
-                          <p className="text-lg font-black text-[#6B5740]">{weeklyNutrition.carbs}</p>
+                          <p className="text-lg font-black text-[#8B6F3C]">{weeklyNutrition.carbs}</p>
                           <p className="text-[10px] text-[#6E6A60] font-medium uppercase tracking-wider">Carbs</p>
                         </div>
                         <div className="text-center bg-[#F4F2EA] rounded-2xl py-2.5 px-2">
-                          <p className="text-lg font-black text-[#6B5740]">{weeklyNutrition.fat}</p>
+                          <p className="text-lg font-black text-[#8B6F3C]">{weeklyNutrition.fat}</p>
                           <p className="text-[10px] text-[#6E6A60] font-medium uppercase tracking-wider">Fat</p>
                         </div>
                       </div>
-                      <div className="bg-[#8B7355]/8 rounded-xl px-4 py-2.5 flex items-center justify-between">
-                        <span className="text-xs font-semibold text-[#6B5740]">Daily Average</span>
+                      <div className="bg-[#C49A5C]/8 rounded-xl px-4 py-2.5 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-[#8B6F3C]">Daily Average</span>
                         <div className="flex items-center gap-3 text-xs text-[#6E6A60]">
-                          <span className="font-bold text-[#8B7355]">{dailyAvgCals} cal</span>
+                          <span className="font-bold text-[#C49A5C]">{dailyAvgCals} cal</span>
                           <span>{dailyAvgProtein}g P</span>
                           <span>{dailyAvgCarbs}g C</span>
                           <span>{dailyAvgFat}g F</span>

@@ -78,7 +78,7 @@ export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToP
                     <div className="flex gap-2">
                       <Button
                         onClick={() => onAddToPlanner(recipe)}
-                        className="flex-1 bg-[#8B7355] text-white rounded-full text-xs hover:bg-[#6B5740]"
+                        className="flex-1 bg-[#C49A5C] text-white rounded-full text-xs hover:bg-[#8B6F3C]"
                         size="sm"
                       >
                         <Calendar className="w-3 h-3 mr-1" /> Add to Plan

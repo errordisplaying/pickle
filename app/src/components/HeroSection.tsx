@@ -43,7 +43,7 @@ interface HeroSectionProps {
   onAddToPlanner: (recipe: SavedRecipe) => void;
 }
 
-const headlines = ['Cook With What You Have.', 'Reduce Food Waste.', 'Spend Smarter.'];
+const headlines = ['cook with what you have.', 'waste less, eat better.', 'your kitchen, simplified.'];
 
 export default function HeroSection({
   heroRef,
@@ -168,7 +168,7 @@ export default function HeroSection({
 
         {/* Headline on image */}
         <div className="hero-headline absolute bottom-8 left-8 right-8 z-20">
-          <h1 className="text-[clamp(2.5rem,5vw,4.5rem)] font-black uppercase text-white leading-none relative h-[1.1em] overflow-hidden drop-shadow-lg">
+          <h1 className="text-[clamp(2.5rem,5vw,4.5rem)] font-black lowercase text-white leading-none relative h-[1.1em] overflow-hidden drop-shadow-lg">
             {headlines.map((text, i) => (
               <span
                 key={text}
@@ -200,7 +200,7 @@ export default function HeroSection({
             onClick={() => setMode('recipe')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full text-sm font-semibold transition-all ${
               mode === 'recipe'
-                ? 'bg-[#8B7355] text-white'
+                ? 'bg-[#C49A5C] text-white'
                 : 'bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#ddd9cc]'
             }`}
           >
@@ -210,7 +210,7 @@ export default function HeroSection({
             onClick={() => setMode('testKitchen')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full text-sm font-semibold transition-all ${
               mode === 'testKitchen'
-                ? 'bg-[#8B7355] text-white'
+                ? 'bg-[#C49A5C] text-white'
                 : 'bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#ddd9cc]'
             }`}
           >
@@ -280,7 +280,7 @@ export default function HeroSection({
                     onClick={() => onToggleDietaryFilter(filter)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                       activeDietaryFilters.includes(filter)
-                        ? 'bg-[#8B7355] text-white shadow-sm'
+                        ? 'bg-[#C49A5C] text-white shadow-sm'
                         : 'bg-[#E8E6DC] text-[#6E6A60] hover:bg-[#ddd9cc]'
                     }`}
                   >
@@ -293,7 +293,7 @@ export default function HeroSection({
             <Button
               onClick={onFindRecipes}
               disabled={loading || !ingredients.trim()}
-              className="w-full japandi-button bg-[#8B7355] text-white hover:bg-[#6B5740] disabled:opacity-50"
+              className="w-full japandi-button bg-[#C49A5C] text-white hover:bg-[#8B6F3C] disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -341,7 +341,7 @@ export default function HeroSection({
                   placeholder="Type and press Enter"
                   className="bg-white border-[#E8E6DC] rounded-2xl text-sm flex-1"
                 />
-                <Button onClick={addIngredientChip} className="bg-[#8B7355] text-white rounded-full px-3">
+                <Button onClick={addIngredientChip} className="bg-[#C49A5C] text-white rounded-full px-3">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -363,14 +363,14 @@ export default function HeroSection({
             <Button
               onClick={startTestKitchen}
               disabled={!tkDishName || tkIngredients.length === 0}
-              className="w-full japandi-button bg-[#8B7355] text-white hover:bg-[#6B5740] disabled:opacity-50"
+              className="w-full japandi-button bg-[#C49A5C] text-white hover:bg-[#8B6F3C] disabled:opacity-50"
             >
               <Beaker className="w-4 h-4 mr-2" /> Start Test Kitchen
             </Button>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="bg-[#8B7355] rounded-2xl p-4 text-white">
+            <div className="bg-[#C49A5C] rounded-2xl p-4 text-white">
               <div className="flex items-center gap-2 mb-2">
                 <Beaker className="w-4 h-4" />
                 <span className="text-xs font-medium opacity-80">Test Kitchen Active</span>
@@ -395,7 +395,7 @@ export default function HeroSection({
               <Button
                 onClick={processTestKitchenCommand}
                 disabled={tkLoading || !tkCommand.trim()}
-                className="bg-[#8B7355] text-white rounded-full px-4"
+                className="bg-[#C49A5C] text-white rounded-full px-4"
               >
                 {tkLoading ? '...' : 'Go'}
               </Button>
@@ -458,7 +458,7 @@ export default function HeroSection({
               <div>
                 <h2 className="text-3xl font-black uppercase text-[#1A1A1A]">Here's What I Found</h2>
                 {recipeData.source === 'scraped' && (
-                  <p className="text-sm text-[#8B7355] mt-1 font-medium">Scraped from top cooking websites</p>
+                  <p className="text-sm text-[#C49A5C] mt-1 font-medium">Scraped from top cooking websites</p>
                 )}
                 {recipeData.source === 'demo' && (
                   <p className="text-sm text-[#6E6A60] mt-1">Showing suggested recipes</p>
@@ -507,7 +507,7 @@ export default function HeroSection({
                                 onClick={(e) => { e.stopPropagation(); setServingMultiplier(mult); }}
                                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                                   servingMultiplier === mult
-                                    ? 'bg-[#8B7355] text-white shadow-sm'
+                                    ? 'bg-[#C49A5C] text-white shadow-sm'
                                     : 'bg-white text-[#6E6A60] hover:bg-[#E8E6DC]'
                                 }`}
                               >
@@ -523,7 +523,7 @@ export default function HeroSection({
                           return (
                             <>
                               {servingMultiplier !== 1 && (
-                                <p className="text-xs text-[#8B7355] italic mb-2">Nutrition scaled to {servingMultiplier}x — adjust ingredient amounts proportionally.</p>
+                                <p className="text-xs text-[#C49A5C] italic mb-2">Nutrition scaled to {servingMultiplier}x — adjust ingredient amounts proportionally.</p>
                               )}
                               <div className="flex items-center gap-3 mb-6 flex-wrap">
                                 <div className="flex items-center gap-1.5 text-sm text-[#6E6A60] bg-[#F4F2EA] px-3 py-1.5 rounded-full">
@@ -562,7 +562,7 @@ export default function HeroSection({
                           <ol className="space-y-3">
                             {recipe.steps.map((step: string, stepIdx: number) => (
                               <li key={stepIdx} className="flex gap-3 text-sm">
-                                <span className="flex-shrink-0 w-7 h-7 bg-[#8B7355] text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                                <span className="flex-shrink-0 w-7 h-7 bg-[#C49A5C] text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
                                   {stepIdx + 1}
                                 </span>
                                 <span className="text-[#1A1A1A] leading-relaxed">{step}</span>
@@ -601,7 +601,7 @@ export default function HeroSection({
                             <Share2 className="w-4 h-4" /> Share
                           </Button>
                           {recipe.sourceUrl && (
-                            <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-[#8B7355] underline hover:text-[#6B5740] font-medium">
+                            <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-[#C49A5C] underline hover:text-[#8B6F3C] font-medium">
                               View on {recipe.sourceSite || 'Source'}
                             </a>
                           )}
@@ -663,7 +663,7 @@ export default function HeroSection({
                             {recipe.nutrition.calories} cal
                           </div>
                         )}
-                        <div className="ml-auto text-[#8B7355] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="ml-auto text-[#C49A5C] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           View <ArrowRight className="w-3 h-3" />
                         </div>
                       </div>

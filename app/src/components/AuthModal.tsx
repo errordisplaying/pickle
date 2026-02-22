@@ -103,7 +103,7 @@ const AuthModal = ({ onClose, showToast }: AuthModalProps) => {
             <CloudOff className="w-12 h-12 text-[#6E6A60] mx-auto mb-4" />
             <p className="text-sm text-[#6E6A60] mb-2 font-medium">Cloud Sync Not Configured</p>
             <p className="text-xs text-[#6E6A60] leading-relaxed">
-              To enable user accounts, add your Supabase project URL and anon key to the <code className="bg-[#E8E6DC] px-1.5 py-0.5 rounded text-[#8B7355] font-mono text-[11px]">.env</code> file in the app directory.
+              To enable user accounts, add your Supabase project URL and anon key to the <code className="bg-[#E8E6DC] px-1.5 py-0.5 rounded text-[#C49A5C] font-mono text-[11px]">.env</code> file in the app directory.
             </p>
           </div>
         ) : (
@@ -112,7 +112,7 @@ const AuthModal = ({ onClose, showToast }: AuthModalProps) => {
             <button
               onClick={signInWithGoogle}
               disabled={authLoading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-2xl border-2 border-[#E8E6DC] hover:border-[#8B7355] bg-white text-sm font-semibold text-[#1A1A1A] transition-all duration-200 mb-5"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-2xl border-2 border-[#E8E6DC] hover:border-[#C49A5C] bg-white text-sm font-semibold text-[#1A1A1A] transition-all duration-200 mb-5"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -139,7 +139,7 @@ const AuthModal = ({ onClose, showToast }: AuthModalProps) => {
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
                   placeholder="Email address"
-                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white border-2 border-[#E8E6DC] focus:border-[#8B7355] outline-none text-sm text-[#1A1A1A] placeholder:text-[#6E6A60]/50 transition-colors"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white border-2 border-[#E8E6DC] focus:border-[#C49A5C] outline-none text-sm text-[#1A1A1A] placeholder:text-[#6E6A60]/50 transition-colors"
                 />
               </div>
               <div className="relative">
@@ -149,7 +149,7 @@ const AuthModal = ({ onClose, showToast }: AuthModalProps) => {
                   onChange={(e) => setAuthPassword(e.target.value)}
                   placeholder="Password"
                   onKeyDown={(e) => e.key === 'Enter' && (authMode === 'sign_in' ? signInWithEmail() : signUpWithEmail())}
-                  className="w-full pl-4 pr-11 py-3.5 rounded-2xl bg-white border-2 border-[#E8E6DC] focus:border-[#8B7355] outline-none text-sm text-[#1A1A1A] placeholder:text-[#6E6A60]/50 transition-colors"
+                  className="w-full pl-4 pr-11 py-3.5 rounded-2xl bg-white border-2 border-[#E8E6DC] focus:border-[#C49A5C] outline-none text-sm text-[#1A1A1A] placeholder:text-[#6E6A60]/50 transition-colors"
                 />
                 <button
                   type="button"
@@ -170,7 +170,7 @@ const AuthModal = ({ onClose, showToast }: AuthModalProps) => {
             <button
               onClick={authMode === 'sign_in' ? signInWithEmail : signUpWithEmail}
               disabled={authLoading || !authEmail || !authPassword}
-              className="w-full py-3.5 rounded-2xl bg-[#8B7355] text-white font-semibold text-sm hover:bg-[#6B5740] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 mb-4"
+              className="w-full py-3.5 rounded-2xl bg-[#C49A5C] text-white font-semibold text-sm hover:bg-[#8B6F3C] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 mb-4"
             >
               {authLoading ? 'Please wait...' : authMode === 'sign_in' ? 'Sign In' : 'Create Account'}
             </button>
@@ -180,7 +180,7 @@ const AuthModal = ({ onClose, showToast }: AuthModalProps) => {
               {authMode === 'sign_in' ? "Don't have an account? " : 'Already have an account? '}
               <button
                 onClick={() => { setAuthMode(authMode === 'sign_in' ? 'sign_up' : 'sign_in'); setAuthError(''); }}
-                className="text-[#8B7355] font-semibold hover:text-[#6B5740]"
+                className="text-[#C49A5C] font-semibold hover:text-[#8B6F3C]"
               >
                 {authMode === 'sign_in' ? 'Sign Up' : 'Sign In'}
               </button>

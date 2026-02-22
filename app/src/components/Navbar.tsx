@@ -64,10 +64,10 @@ export default function Navbar({
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
-          <button onClick={() => setMode('recipe')} className={`text-sm font-medium transition-colors ${mode === 'recipe' ? 'text-[#8B7355]' : 'text-[#6E6A60] hover:text-[#1A1A1A]'}`}>
+          <button onClick={() => setMode('recipe')} className={`text-sm font-medium transition-colors ${mode === 'recipe' ? 'text-[#C49A5C]' : 'text-[#6E6A60] hover:text-[#1A1A1A]'}`}>
             Recipes
           </button>
-          <button onClick={() => setMode('testKitchen')} className={`text-sm font-medium transition-colors ${mode === 'testKitchen' ? 'text-[#8B7355]' : 'text-[#6E6A60] hover:text-[#1A1A1A]'}`}>
+          <button onClick={() => setMode('testKitchen')} className={`text-sm font-medium transition-colors ${mode === 'testKitchen' ? 'text-[#C49A5C]' : 'text-[#6E6A60] hover:text-[#1A1A1A]'}`}>
             Test Kitchen
           </button>
           <button onClick={() => onOpenPlanner()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors">
@@ -76,7 +76,7 @@ export default function Navbar({
           <button onClick={() => onOpenShoppingList()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors relative">
             <ShoppingCart className="w-5 h-5" />
             {shoppingList.filter(i => !i.purchased).length > 0 && (
-              <span className="absolute -top-1 -right-2 w-4 h-4 bg-[#8B7355] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-2 w-4 h-4 bg-[#C49A5C] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {shoppingList.filter(i => !i.purchased).length}
               </span>
             )}
@@ -95,7 +95,7 @@ export default function Navbar({
           {session?.user ? (
             <div className="relative group">
               <button
-                className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#8B7355] hover:border-[#6B5740] transition-colors flex items-center justify-center bg-[#8B7355] text-white text-xs font-bold"
+                className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#C49A5C] hover:border-[#8B6F3C] transition-colors flex items-center justify-center bg-[#C49A5C] text-white text-xs font-bold"
               >
                 {userProfile?.avatar_url ? (
                   <img src={userProfile.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -161,13 +161,13 @@ export default function Navbar({
               {/* Mode Buttons */}
               <button
                 onClick={() => { setMode('recipe'); closeMobile(); }}
-                className={`w-full text-left px-4 py-3 rounded-2xl text-sm font-medium transition-colors ${mode === 'recipe' ? 'bg-[#8B7355] text-white' : 'text-[#6E6A60] hover:bg-[#E8E6DC]'}`}
+                className={`w-full text-left px-4 py-3 rounded-2xl text-sm font-medium transition-colors ${mode === 'recipe' ? 'bg-[#C49A5C] text-white' : 'text-[#6E6A60] hover:bg-[#E8E6DC]'}`}
               >
                 Recipes
               </button>
               <button
                 onClick={() => { setMode('testKitchen'); closeMobile(); }}
-                className={`w-full text-left px-4 py-3 rounded-2xl text-sm font-medium transition-colors ${mode === 'testKitchen' ? 'bg-[#8B7355] text-white' : 'text-[#6E6A60] hover:bg-[#E8E6DC]'}`}
+                className={`w-full text-left px-4 py-3 rounded-2xl text-sm font-medium transition-colors ${mode === 'testKitchen' ? 'bg-[#C49A5C] text-white' : 'text-[#6E6A60] hover:bg-[#E8E6DC]'}`}
               >
                 Test Kitchen
               </button>
@@ -187,7 +187,7 @@ export default function Navbar({
               >
                 <ShoppingCart className="w-5 h-5" /> Shopping List
                 {shoppingList.filter(i => !i.purchased).length > 0 && (
-                  <span className="ml-auto w-5 h-5 bg-[#8B7355] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="ml-auto w-5 h-5 bg-[#C49A5C] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                     {shoppingList.filter(i => !i.purchased).length}
                   </span>
                 )}

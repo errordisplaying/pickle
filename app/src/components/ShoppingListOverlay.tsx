@@ -26,14 +26,14 @@ export default function ShoppingListOverlay({
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-5 border-b border-black/5">
         <div className="flex items-center gap-3">
-          <ShoppingCart className="w-6 h-6 text-[#8B7355]" />
+          <ShoppingCart className="w-6 h-6 text-[#C49A5C]" />
           <h2 className="text-2xl font-black uppercase text-[#1A1A1A]">Shopping List</h2>
           <span className="text-sm text-[#6E6A60]">
             ({shoppingList.filter(i => !i.purchased).length} remaining)
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={onGenerateFromPlan} className="bg-[#8B7355] text-white hover:bg-[#6B5740] rounded-full text-xs" size="sm">
+          <Button onClick={onGenerateFromPlan} className="bg-[#C49A5C] text-white hover:bg-[#8B6F3C] rounded-full text-xs" size="sm">
             Generate from Plan
           </Button>
           {shoppingList.some(i => i.purchased) && (
@@ -60,7 +60,7 @@ export default function ShoppingListOverlay({
               <ShoppingCart className="w-16 h-16 text-[#E8E6DC] mx-auto mb-4" />
               <h3 className="text-xl font-bold text-[#1A1A1A] mb-2">No items yet</h3>
               <p className="text-[#6E6A60] mb-6">Add meals to your planner, then generate a shopping list.</p>
-              <Button onClick={onOpenPlanner} className="bg-[#8B7355] text-white hover:bg-[#6B5740] rounded-full">
+              <Button onClick={onOpenPlanner} className="bg-[#C49A5C] text-white hover:bg-[#8B6F3C] rounded-full">
                 Open Meal Planner
               </Button>
             </div>
@@ -85,7 +85,7 @@ export default function ShoppingListOverlay({
                 if (items.length === 0) return null;
                 return (
                   <div key={category} className="mb-6">
-                    <h3 className="text-xs font-bold text-[#8B7355] uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <h3 className="text-xs font-bold text-[#C49A5C] uppercase tracking-wider mb-2 flex items-center gap-2">
                       <span>{category === 'Produce' ? '🥬' : category === 'Protein' ? '🥩' : category === 'Dairy' ? '🥛' : category === 'Pantry' ? '🫙' : category === 'Spices' ? '🌿' : '📦'}</span>
                       {category}
                       <span className="text-[#6E6A60] font-normal">({items.filter(i => !i.purchased).length})</span>
@@ -100,7 +100,7 @@ export default function ShoppingListOverlay({
                           } border border-black/5`}
                         >
                           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                            item.purchased ? 'bg-emerald-500 border-emerald-500' : 'border-[#8B7355]/30'
+                            item.purchased ? 'bg-emerald-500 border-emerald-500' : 'border-[#C49A5C]/30'
                           }`}>
                             {item.purchased && <Check className="w-3 h-3 text-white" />}
                           </div>

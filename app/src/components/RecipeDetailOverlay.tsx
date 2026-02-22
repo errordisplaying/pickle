@@ -68,7 +68,7 @@ export default function RecipeDetailOverlay({
             {/* Tags on image */}
             <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
               {recipe.tags.map(tag => (
-                <span key={tag} className="text-xs bg-[#8B7355]/90 backdrop-blur-sm text-white px-3 py-1 rounded-full font-medium">
+                <span key={tag} className="text-xs bg-[#C49A5C]/90 backdrop-blur-sm text-white px-3 py-1 rounded-full font-medium">
                   {tag}
                 </span>
               ))}
@@ -91,16 +91,16 @@ export default function RecipeDetailOverlay({
           <div className="flex items-center gap-4 px-6 py-4 border-b border-[#E8E6DC]">
             {recipe.totalTime && recipe.totalTime !== 'N/A' && (
               <div className="flex items-center gap-1.5 text-[#6E6A60]">
-                <Clock className="w-4 h-4 text-[#8B7355]" />
+                <Clock className="w-4 h-4 text-[#C49A5C]" />
                 <span className="text-sm font-medium">{recipe.totalTime}</span>
               </div>
             )}
             <div className="flex items-center gap-1.5 text-[#6E6A60]">
-              <Flame className="w-4 h-4 text-[#8B7355]" />
+              <Flame className="w-4 h-4 text-[#C49A5C]" />
               <span className="text-sm font-medium">{recipe.nutrition.calories} cal</span>
             </div>
             <div className="flex items-center gap-1.5 text-[#6E6A60]">
-              <ChefHat className="w-4 h-4 text-[#8B7355]" />
+              <ChefHat className="w-4 h-4 text-[#C49A5C]" />
               <span className="text-sm font-medium">{recipe.difficulty}</span>
             </div>
           </div>
@@ -132,7 +132,7 @@ export default function RecipeDetailOverlay({
               <ul className="space-y-2">
                 {recipe.ingredients.map((ingredient, i) => (
                   <li key={i} className="flex items-start gap-3 text-[#3A3A3A]">
-                    <span className="w-5 h-5 mt-0.5 flex-shrink-0 rounded-full border-2 border-[#8B7355]/30" />
+                    <span className="w-5 h-5 mt-0.5 flex-shrink-0 rounded-full border-2 border-[#C49A5C]/30" />
                     <span className="text-sm leading-relaxed">{ingredient}</span>
                   </li>
                 ))}
@@ -147,7 +147,7 @@ export default function RecipeDetailOverlay({
               <ol className="space-y-4">
                 {recipe.steps.map((step, i) => (
                   <li key={i} className="flex gap-4">
-                    <span className="w-7 h-7 flex-shrink-0 rounded-full bg-[#8B7355] text-white text-xs font-bold flex items-center justify-center">
+                    <span className="w-7 h-7 flex-shrink-0 rounded-full bg-[#C49A5C] text-white text-xs font-bold flex items-center justify-center">
                       {i + 1}
                     </span>
                     <p className="text-sm text-[#3A3A3A] leading-relaxed pt-1">{step}</p>
@@ -159,10 +159,10 @@ export default function RecipeDetailOverlay({
 
           {/* Why It Works */}
           {recipe.whyItWorks && (
-            <div className="mx-6 my-4 p-4 bg-[#8B7355]/10 rounded-2xl border border-[#8B7355]/20">
+            <div className="mx-6 my-4 p-4 bg-[#C49A5C]/10 rounded-2xl border border-[#C49A5C]/20">
               <div className="flex items-center gap-2 mb-2">
-                <Lightbulb className="w-4 h-4 text-[#8B7355]" />
-                <h3 className="text-sm font-bold text-[#8B7355]">Why It Works</h3>
+                <Lightbulb className="w-4 h-4 text-[#C49A5C]" />
+                <h3 className="text-sm font-bold text-[#C49A5C]">Why It Works</h3>
               </div>
               <p className="text-sm text-[#5A5548] leading-relaxed">{recipe.whyItWorks}</p>
             </div>
@@ -179,7 +179,7 @@ export default function RecipeDetailOverlay({
             className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-colors ${
               isFavorite
                 ? 'bg-red-50 text-red-500 border border-red-200'
-                : 'bg-white text-[#6E6A60] border border-[#E8E6DC] hover:border-[#8B7355]/40'
+                : 'bg-white text-[#6E6A60] border border-[#E8E6DC] hover:border-[#C49A5C]/40'
             }`}
           >
             <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-400' : ''}`} />
@@ -188,7 +188,7 @@ export default function RecipeDetailOverlay({
 
           <button
             onClick={() => onAddToPlanner(recipe)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#8B7355] text-white rounded-full text-sm font-semibold hover:bg-[#6B5740] transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#C49A5C] text-white rounded-full text-sm font-semibold hover:bg-[#8B6F3C] transition-colors"
           >
             <Calendar className="w-4 h-4" />
             Add to Planner
@@ -196,7 +196,7 @@ export default function RecipeDetailOverlay({
 
           <button
             onClick={() => onShareRecipe(recipe)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#6E6A60] border border-[#E8E6DC] rounded-full text-sm font-semibold hover:border-[#8B7355]/40 transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#6E6A60] border border-[#E8E6DC] rounded-full text-sm font-semibold hover:border-[#C49A5C]/40 transition-colors"
           >
             <Share2 className="w-4 h-4" />
             Share

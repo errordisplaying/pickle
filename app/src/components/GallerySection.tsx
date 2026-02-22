@@ -31,11 +31,11 @@ export default function GallerySection({ galleryRef, recipes, onToggleFavorite, 
 
       {/* Header */}
       <div className="gallery-text absolute left-[6vw] top-[12vh] z-10">
-        <h2 className="text-[clamp(2rem,4vw,3.5rem)] font-black uppercase text-[#1A1A1A] leading-none mb-3">
-          Recipes For You
+        <h2 className="text-[clamp(2rem,4vw,3.5rem)] font-black lowercase text-[#1A1A1A] leading-none mb-3">
+          recipes for you
         </h2>
         <p className="text-[#6E6A60] text-lg leading-relaxed max-w-xl">
-          Personalized picks based on your taste. Click a card to see the full recipe.
+          Curated picks based on what you love. Tap any card to dive in.
         </p>
       </div>
 
@@ -65,7 +65,7 @@ export default function GallerySection({ galleryRef, recipes, onToggleFavorite, 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
                 {/* Badge — top left */}
-                <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-[#8B7355]/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full z-10">
+                <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-[#C49A5C]/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full z-10">
                   <TagIcon className="w-3 h-3" />
                   <span className="text-[11px] font-semibold">{primaryTag}</span>
                 </div>

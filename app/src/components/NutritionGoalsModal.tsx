@@ -17,8 +17,8 @@ const NutritionGoalsModal = ({ nutritionGoals, onUpdateGoals, onClose, showToast
       <div className="bg-white rounded-[24px] max-w-md w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-black/5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#8B7355]/10 rounded-2xl flex items-center justify-center">
-              <Target className="w-5 h-5 text-[#8B7355]" />
+            <div className="w-10 h-10 bg-[#C49A5C]/10 rounded-2xl flex items-center justify-center">
+              <Target className="w-5 h-5 text-[#C49A5C]" />
             </div>
             <div>
               <h3 className="font-bold text-lg text-[#1A1A1A]">Daily Nutrition Goals</h3>
@@ -58,7 +58,7 @@ const NutritionGoalsModal = ({ nutritionGoals, onUpdateGoals, onClose, showToast
             </Button>
             <Button
               onClick={() => { onClose(); showToast('Goals saved!', 'success'); }}
-              className="flex-1 bg-[#8B7355] text-white hover:bg-[#6B5740] rounded-full text-sm"
+              className="flex-1 bg-[#C49A5C] text-white hover:bg-[#8B6F3C] rounded-full text-sm"
             >
               Save Goals
             </Button>

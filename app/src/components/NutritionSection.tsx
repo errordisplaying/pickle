@@ -39,8 +39,8 @@ const MACROS: MacroConfig[] = [
     label: 'Protein',
     unit: 'g',
     icon: <Beef className="w-4 h-4" />,
-    color: '#8B7355',
-    bgColor: '#8B735520',
+    color: '#C49A5C',
+    bgColor: '#C49A5C20',
     min: 20,
     max: 300,
     step: 5,
@@ -106,7 +106,7 @@ export default function NutritionSection({ nutritionRef, nutritionGoals, onUpdat
       <div className="nutrition-panel absolute left-[58vw] top-[14vh] w-[36vw]">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-[clamp(1.8rem,3.5vw,3rem)] font-black uppercase text-[#1A1A1A] leading-none mb-3">
+            <h2 className="text-[clamp(1.8rem,3.5vw,3rem)] font-black lowercase text-[#1A1A1A] leading-none mb-3">
               Nutrition That<br />Adapts To You
             </h2>
             <p className="text-[#6E6A60] text-base leading-relaxed max-w-[28vw]">
@@ -205,7 +205,7 @@ export default function NutritionSection({ nutritionRef, nutritionGoals, onUpdat
         {/* Reset button */}
         <button
           onClick={resetToDefaults}
-          className="mt-5 flex items-center gap-2 text-sm text-[#6E6A60] hover:text-[#8B7355] transition-colors cursor-pointer"
+          className="mt-5 flex items-center gap-2 text-sm text-[#6E6A60] hover:text-[#C49A5C] transition-colors cursor-pointer"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Reset to defaults

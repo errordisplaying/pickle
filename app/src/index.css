@@ -6,36 +6,44 @@
 
 @layer base {
   :root {
-    /* Japandi Color Palette */
+    /* chickpea Color Palette */
     --background: 43 23% 93%; /* #F4F2EA warm off-white */
     --background-secondary: 43 18% 89%; /* #E8E6DC */
     --foreground: 0 0% 10%; /* #1A1A1A */
     --foreground-secondary: 40 8% 40%; /* #6E6A60 */
-    
+
     --card: 43 23% 93%;
     --card-foreground: 0 0% 10%;
     --popover: 43 23% 93%;
     --popover-foreground: 0 0% 10%;
-    
-    --primary: 30 22% 44%; /* #8B7355 warm oak */
+
+    --primary: 33 30% 48%; /* #9F7F52 warmer chickpea gold */
     --primary-foreground: 0 0% 98%;
-    
+
     --secondary: 43 18% 89%;
     --secondary-foreground: 0 0% 10%;
-    
+
     --muted: 43 15% 85%;
     --muted-foreground: 40 8% 40%;
-    
-    --accent: 30 22% 44%;
+
+    --accent: 33 30% 48%;
     --accent-foreground: 0 0% 98%;
-    
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    
+
     --border: 43 15% 85%;
     --input: 43 15% 85%;
-    --ring: 30 22% 44%;
+    --ring: 33 30% 48%;
     --radius: 1.75rem;
+
+    /* Brand tokens */
+    --chickpea-gold: #C49A5C;
+    --chickpea-tan: #D4A96A;
+    --chickpea-dark: #8B6F3C;
+    --chickpea-cream: #F7F3EB;
+    --olive-soft: #8B9E6B;
+    --olive-muted: #A8B590;
   }
 }
 
@@ -43,21 +51,21 @@
   * {
     @apply border-border;
   }
-  
+
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', sans-serif;
     background-color: #F4F2EA;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Montserrat', sans-serif;
     font-weight: 800;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     line-height: 0.95;
   }
 }
@@ -66,46 +74,52 @@
   .font-handwritten {
     font-family: 'Caveat', cursive;
   }
-  
+
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .japandi-card {
     @apply rounded-[28px] overflow-hidden;
     box-shadow: 0 18px 50px rgba(0,0,0,0.10);
   }
-  
+
   .japandi-button {
     @apply rounded-full px-8 py-4 font-semibold transition-all duration-300;
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
   }
-  
+
   .japandi-button:hover {
     transform: translateY(-2px) scale(1.01);
     box-shadow: 0 14px 40px rgba(0,0,0,0.12);
   }
-  
+
   .grain-overlay {
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.04;
+    opacity: 0.03;
     mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   }
-  
+
   .section-pinned {
     @apply relative w-screen h-screen overflow-hidden;
   }
-  
+
   .section-flowing {
     @apply relative w-full;
   }
-  
+
   .image-grade {
     filter: saturate(0.92) contrast(0.98) brightness(1.02);
+  }
+
+  /* Smooth section divider */
+  .section-divider {
+    @apply w-full h-px;
+    background: linear-gradient(90deg, transparent 0%, rgba(196, 154, 92, 0.2) 30%, rgba(196, 154, 92, 0.2) 70%, transparent 100%);
   }
 }
 
@@ -113,21 +127,33 @@
   .text-primary-dark {
     color: #1A1A1A;
   }
-  
+
   .text-secondary-warm {
     color: #6E6A60;
   }
-  
+
   .bg-forest {
-    background-color: #8B7355;
+    background-color: var(--chickpea-gold);
   }
-  
+
   .bg-warm-white {
     background-color: #F4F2EA;
   }
-  
+
   .bg-warm-gray {
     background-color: #E8E6DC;
+  }
+
+  .text-chickpea {
+    color: var(--chickpea-gold);
+  }
+
+  .bg-chickpea {
+    background-color: var(--chickpea-gold);
+  }
+
+  .bg-chickpea-dark {
+    background-color: var(--chickpea-dark);
   }
 }
 
@@ -142,12 +168,12 @@
 }
 
 .recipe-slider::-webkit-scrollbar-thumb {
-  background: #8B7355;
+  background: var(--chickpea-gold);
   border-radius: 4px;
 }
 
 .recipe-slider::-webkit-scrollbar-thumb:hover {
-  background: #6B5740;
+  background: var(--chickpea-dark);
 }
 
 /* Swap section scrollbar */
@@ -160,7 +186,7 @@
 }
 
 .swap-scroll::-webkit-scrollbar-thumb {
-  background: #8B7355;
+  background: var(--chickpea-gold);
   border-radius: 4px;
 }
 
@@ -174,12 +200,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #8B7355;
+  background: var(--chickpea-gold);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6B5740;
+  background: var(--chickpea-dark);
 }
 
 /* Animation utilities */
@@ -220,7 +246,7 @@
 }
 
 .planner-sidebar-scroll::-webkit-scrollbar-thumb {
-  background: #8B7355;
+  background: var(--chickpea-gold);
   border-radius: 4px;
 }
 
@@ -283,4 +309,16 @@
 
 .animate-scale-in {
   animation: scaleIn 0.3s ease-out;
+}
+
+/* Shimmer effect for gallery cards */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
 }

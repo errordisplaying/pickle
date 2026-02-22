@@ -14,7 +14,7 @@ export default function ToastNotifications({ toasts, onDismiss }: ToastNotificat
           key={toast.id}
           className={`pointer-events-auto px-5 py-3 rounded-2xl shadow-lg backdrop-blur-md text-sm font-medium flex items-center gap-2 animate-toast-in ${
             toast.type === 'success' ? 'bg-emerald-500/90 text-white' :
-            toast.type === 'info' ? 'bg-[#8B7355]/90 text-white' :
+            toast.type === 'info' ? 'bg-[#C49A5C]/90 text-white' :
             toast.type === 'warning' ? 'bg-amber-500/90 text-white' :
             'bg-red-500/90 text-white'
           }`}

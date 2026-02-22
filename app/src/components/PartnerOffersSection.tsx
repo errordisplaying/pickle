@@ -34,7 +34,7 @@ export default function PartnerOffersSection() {
               </div>
             </div>
             <div className="p-6">
-              <p className="text-xs text-[#8B7355] font-semibold uppercase tracking-wider mb-1">MasterClass</p>
+              <p className="text-xs text-[#C49A5C] font-semibold uppercase tracking-wider mb-1">MasterClass</p>
               <h3 className="font-bold text-xl text-[#1A1A1A] mb-2">Gordon Ramsay Teaches Cooking</h3>
               <p className="text-sm text-[#6E6A60] mb-4 leading-relaxed">Learn knife skills, sauces, and plating techniques from the world's most famous chef. 20+ HD video lessons and exclusive recipes included.</p>
               <Button className="bg-[#1A1A1A] text-white rounded-full hover:bg-[#333]">

@@ -13,8 +13,8 @@ const ExportCalendarModal = ({ plannerMeals, onClose }: ExportCalendarModalProps
       <div className="bg-white rounded-[24px] max-w-lg w-full max-h-[70vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-black/5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#8B7355]/10 rounded-2xl flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-[#8B7355]" />
+            <div className="w-10 h-10 bg-[#C49A5C]/10 rounded-2xl flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-[#C49A5C]" />
             </div>
             <div>
               <h3 className="font-bold text-lg text-[#1A1A1A]">Export to Google Calendar</h3>
@@ -31,7 +31,7 @@ const ExportCalendarModal = ({ plannerMeals, onClose }: ExportCalendarModalProps
             if (slots.length === 0) return null;
             return (
               <div key={day}>
-                <p className="text-xs font-bold text-[#8B7355] uppercase tracking-wider mb-2">{day}</p>
+                <p className="text-xs font-bold text-[#C49A5C] uppercase tracking-wider mb-2">{day}</p>
                 <div className="space-y-1.5">
                   {slots.map(slot => {
                     const recipe = plannerMeals[day][slot] as SavedRecipe;
@@ -50,7 +50,7 @@ const ExportCalendarModal = ({ plannerMeals, onClose }: ExportCalendarModalProps
                           <p className="text-sm font-semibold text-[#1A1A1A] truncate">{toTitleCase(recipe.name)}</p>
                           <p className="text-[10px] text-[#6E6A60] capitalize">{slot} · {recipe.nutrition.calories > 0 ? `${recipe.nutrition.calories} cal` : ''}</p>
                         </div>
-                        <ExternalLink className="w-4 h-4 text-[#8B7355] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                        <ExternalLink className="w-4 h-4 text-[#C49A5C] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                       </a>
                     );
                   })}
