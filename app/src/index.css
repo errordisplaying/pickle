@@ -329,3 +329,80 @@
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
 }
+
+/* ── Micro-interactions ─────────────────────────────────────────── */
+
+/* Button press feedback */
+.btn-press {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-press:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+}
+
+/* Favorite heart pop animation */
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.35); }
+  60% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+.heart-pop {
+  animation: heartPop 0.4s ease-out;
+}
+
+/* Smooth checkbox/toggle tick */
+@keyframes checkTick {
+  0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.check-tick {
+  animation: checkTick 0.3s ease-out;
+}
+
+/* Badge count bounce on change */
+@keyframes badgeBounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.badge-bounce {
+  animation: badgeBounce 0.3s ease-out;
+}
+
+/* Overlay entrance - slide up with fade */
+@keyframes overlaySlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-overlay-in {
+  animation: overlaySlideUp 0.35s ease-out;
+}
+
+/* Ripple effect for buttons */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.25) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.btn-ripple:active::after {
+  opacity: 1;
+}

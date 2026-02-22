@@ -53,7 +53,7 @@ export default function GallerySection({ galleryRef, recipes, onToggleFavorite, 
               <div
                 key={idx}
                 onClick={() => onOpenRecipe(normalized)}
-                className="gallery-card group relative w-[260px] h-full flex-shrink-0 rounded-[28px] overflow-hidden cursor-pointer shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]"
+                className="gallery-card group relative w-[260px] h-full flex-shrink-0 rounded-[28px] overflow-hidden cursor-pointer shadow-lg card-hover"
               >
                 {/* Hero Image */}
                 <OptimizedImage

@@ -38,6 +38,7 @@ import ShoppingListOverlay from '@/components/ShoppingListOverlay';
 import AuthModal from '@/components/AuthModal';
 import RecipeDetailOverlay from '@/components/RecipeDetailOverlay';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import Analytics from '@/components/Analytics';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -1008,6 +1009,9 @@ function App() {
         toasts={toasts}
         onDismiss={(id) => setToasts(prev => prev.filter(t => t.id !== id))}
       />
+
+      {/* Privacy-friendly analytics (loads only when VITE_UMAMI_WEBSITE_ID is set) */}
+      <Analytics />
     </div>
   );
 }

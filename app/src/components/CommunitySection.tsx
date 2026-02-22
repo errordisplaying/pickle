@@ -10,8 +10,8 @@ export default function CommunitySection({ communityRef }: CommunitySectionProps
   return (
     <section ref={communityRef} className="section-flowing bg-warm-white py-20 px-[6vw] z-[60]">
       <div className="text-center max-w-2xl mx-auto mb-12">
-        <h2 className="text-[clamp(2rem,4vw,3.5rem)] font-black uppercase text-[#1A1A1A] leading-none mb-4">
-          Made By The Community
+        <h2 className="text-[clamp(2rem,4vw,3.5rem)] font-black lowercase text-[#1A1A1A] leading-none mb-4">
+          made by the community
         </h2>
         <p className="text-[#6E6A60] text-lg">
           Save, remix, and share your own spins.
@@ -22,7 +22,7 @@ export default function CommunitySection({ communityRef }: CommunitySectionProps
         {communityRecipes.map((recipe, idx) => (
           <div
             key={idx}
-            className="group japandi-card bg-white cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
+            className="group japandi-card bg-white cursor-pointer card-hover"
           >
             <div className="relative h-64 overflow-hidden rounded-[28px]">
               <OptimizedImage

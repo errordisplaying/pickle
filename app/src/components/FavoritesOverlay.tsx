@@ -12,7 +12,7 @@ interface FavoritesOverlayProps {
 
 export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToPlanner, onClose }: FavoritesOverlayProps) {
   return (
-    <div className="fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[201] flex flex-col overflow-y-auto">
+    <div className="fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[201] flex flex-col overflow-y-auto animate-overlay-in">
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-5 border-b border-black/5">
         <div className="flex items-center gap-3">
@@ -28,15 +28,25 @@ export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToP
       <div className="flex-1 px-8 py-6">
         <div className="max-w-7xl mx-auto">
           {favorites.length === 0 ? (
-            <div className="text-center py-20">
-              <Heart className="w-16 h-16 text-[#E8E6DC] mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-[#1A1A1A] mb-2">No saved recipes yet</h3>
-              <p className="text-[#6E6A60]">Tap the heart icon on any recipe to save it here.</p>
+            <div className="text-center py-20 max-w-md mx-auto">
+              {/* Inline illustration — empty plate with heart */}
+              <div className="relative w-32 h-32 mx-auto mb-6">
+                <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                  <ellipse cx="64" cy="80" rx="52" ry="16" fill="#E8E6DC" />
+                  <ellipse cx="64" cy="76" rx="52" ry="16" fill="#F4F2EA" stroke="#E8E6DC" strokeWidth="2" />
+                  <ellipse cx="64" cy="76" rx="36" ry="10" fill="white" stroke="#E8E6DC" strokeWidth="1.5" />
+                  <path d="M64 46 C64 40, 56 37, 56 43 C56 49, 64 54, 64 54 C64 54, 72 49, 72 43 C72 37, 64 40, 64 46Z" fill="#C49A5C" opacity="0.5" className="animate-float" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-[#1A1A1A] mb-2">your recipe box is empty</h3>
+              <p className="text-[#6E6A60] text-sm leading-relaxed">
+                Tap the <Heart className="w-3.5 h-3.5 inline text-red-400 fill-red-400 -mt-0.5" /> on any recipe to save it here for easy access later.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {favorites.map((recipe) => (
-                <div key={recipe.id} className="bg-white rounded-[24px] overflow-hidden shadow-lg group hover:shadow-xl transition-shadow">
+                <div key={recipe.id} className="bg-white rounded-[24px] overflow-hidden shadow-lg group card-hover">
                   <div className="relative h-44 overflow-hidden">
                     <img src={recipe.image} alt={recipe.name} className="w-full h-full object-cover image-grade" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -78,7 +88,7 @@ export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToP
                     <div className="flex gap-2">
                       <Button
                         onClick={() => onAddToPlanner(recipe)}
-                        className="flex-1 bg-[#C49A5C] text-white rounded-full text-xs hover:bg-[#8B6F3C]"
+                        className="flex-1 bg-[#C49A5C] text-white rounded-full text-xs hover:bg-[#8B6F3C] btn-press"
                         size="sm"
                       >
                         <Calendar className="w-3 h-3 mr-1" /> Add to Plan

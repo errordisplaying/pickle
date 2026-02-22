@@ -293,7 +293,7 @@ export default function HeroSection({
             <Button
               onClick={onFindRecipes}
               disabled={loading || !ingredients.trim()}
-              className="w-full japandi-button bg-[#C49A5C] text-white hover:bg-[#8B6F3C] disabled:opacity-50"
+              className="w-full japandi-button bg-[#C49A5C] text-white hover:bg-[#8B6F3C] disabled:opacity-50 btn-press"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -620,7 +620,7 @@ export default function HeroSection({
                   <div
                     key={idx}
                     onClick={() => setExpandedRecipe(idx)}
-                    className="bg-white rounded-[24px] overflow-hidden shadow-lg cursor-pointer transition-all duration-300 hover:scale-[1.04] hover:shadow-2xl group"
+                    className="bg-white rounded-[24px] overflow-hidden shadow-lg cursor-pointer card-hover group"
                   >
                     {/* Card Image */}
                     <div className="relative h-44 overflow-hidden">

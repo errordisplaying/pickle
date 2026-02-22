@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { X, Heart, Calendar, Share2, Clock, Flame, ChefHat, Lightbulb } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { X, Heart, Calendar, Share2, Clock, Flame, ChefHat, Lightbulb, Printer, ExternalLink, Check } from 'lucide-react';
 import { toTitleCase } from '@/utils';
 import type { SavedRecipe } from '@/types';
 
@@ -20,6 +20,21 @@ export default function RecipeDetailOverlay({
   onShareRecipe,
   onClose,
 }: RecipeDetailOverlayProps) {
+  const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
+
+  const toggleStep = (idx: number) => {
+    setCheckedSteps(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   // Close on Escape key
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -32,6 +47,21 @@ export default function RecipeDetailOverlay({
       document.body.style.overflow = '';
     };
   }, [onClose]);
+
+  // Parse numeric value from nutrition string like "25g" -> 25
+  const parseNutrition = (val: string | number): number => {
+    if (typeof val === 'number') return val;
+    return parseInt(val) || 0;
+  };
+
+  // Calculate macro percentages for visual bar
+  const protein = parseNutrition(recipe.nutrition.protein);
+  const carbs = parseNutrition(recipe.nutrition.carbs);
+  const fat = parseNutrition(recipe.nutrition.fat);
+  const totalMacroGrams = protein + carbs + fat;
+  const proteinPct = totalMacroGrams > 0 ? Math.round((protein / totalMacroGrams) * 100) : 0;
+  const carbsPct = totalMacroGrams > 0 ? Math.round((carbs / totalMacroGrams) * 100) : 0;
+  const fatPct = totalMacroGrams > 0 ? 100 - proteinPct - carbsPct : 0;
 
   return (
     <div
@@ -49,7 +79,7 @@ export default function RecipeDetailOverlay({
         {/* Scrollable content */}
         <div className="overflow-y-auto max-h-[90vh] recipe-slider">
           {/* Hero Image */}
-          <div className="relative h-[40vh] min-h-[280px]">
+          <div className="relative h-[36vh] min-h-[260px]">
             <img
               src={recipe.image}
               alt={recipe.name}
@@ -65,6 +95,15 @@ export default function RecipeDetailOverlay({
               className="absolute top-4 right-4 w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors"
             >
               <X className="w-5 h-5" />
+            </button>
+
+            {/* Print button */}
+            <button
+              onClick={handlePrint}
+              className="absolute top-4 right-16 w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors"
+              title="Print recipe"
+            >
+              <Printer className="w-4 h-4" />
             </button>
 
             {/* Tags on image */}
@@ -105,59 +144,113 @@ export default function RecipeDetailOverlay({
               <ChefHat className="w-4 h-4 text-[#C49A5C]" />
               <span className="text-sm font-medium">{recipe.difficulty}</span>
             </div>
+            {recipe.sourceUrl && (
+              <a
+                href={recipe.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-auto flex items-center gap-1.5 text-xs text-[#C49A5C] hover:text-[#8B6F3C] font-medium transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                {recipe.sourceSite || 'Source'}
+              </a>
+            )}
           </div>
 
-          {/* Nutrition Grid */}
-          <div className="grid grid-cols-4 gap-3 px-6 py-4">
-            <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
-              <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Calories</p>
-              <p className="text-lg font-bold text-[#1A1A1A]">{recipe.nutrition.calories}</p>
+          {/* Enhanced Nutrition Section */}
+          <div className="px-6 py-4">
+            <div className="grid grid-cols-4 gap-3 mb-3">
+              <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
+                <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Calories</p>
+                <p className="text-xl font-black text-[#C49A5C]">{recipe.nutrition.calories}</p>
+              </div>
+              <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
+                <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Protein</p>
+                <p className="text-xl font-black text-[#1A1A1A]">{recipe.nutrition.protein}</p>
+              </div>
+              <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
+                <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Carbs</p>
+                <p className="text-xl font-black text-[#1A1A1A]">{recipe.nutrition.carbs}</p>
+              </div>
+              <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
+                <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Fat</p>
+                <p className="text-xl font-black text-[#1A1A1A]">{recipe.nutrition.fat}</p>
+              </div>
             </div>
-            <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
-              <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Protein</p>
-              <p className="text-lg font-bold text-[#1A1A1A]">{recipe.nutrition.protein}</p>
-            </div>
-            <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
-              <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Carbs</p>
-              <p className="text-lg font-bold text-[#1A1A1A]">{recipe.nutrition.carbs}</p>
-            </div>
-            <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
-              <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Fat</p>
-              <p className="text-lg font-bold text-[#1A1A1A]">{recipe.nutrition.fat}</p>
-            </div>
+
+            {/* Macro Ratio Bar */}
+            {totalMacroGrams > 0 && (
+              <div className="bg-white rounded-2xl p-3 shadow-sm">
+                <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-2">Macro Split</p>
+                <div className="flex h-3 rounded-full overflow-hidden gap-0.5">
+                  <div className="bg-[#C49A5C] rounded-l-full transition-all duration-500" style={{ width: `${proteinPct}%` }} />
+                  <div className="bg-[#A8B590] transition-all duration-500" style={{ width: `${carbsPct}%` }} />
+                  <div className="bg-[#E8E6DC] rounded-r-full transition-all duration-500" style={{ width: `${fatPct}%` }} />
+                </div>
+                <div className="flex justify-between mt-1.5 text-[10px] text-[#6E6A60]">
+                  <span><span className="inline-block w-2 h-2 rounded-full bg-[#C49A5C] mr-1" />Protein {proteinPct}%</span>
+                  <span><span className="inline-block w-2 h-2 rounded-full bg-[#A8B590] mr-1" />Carbs {carbsPct}%</span>
+                  <span><span className="inline-block w-2 h-2 rounded-full bg-[#E8E6DC] mr-1 border border-[#d5d1c7]" />Fat {fatPct}%</span>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Ingredients */}
-          {recipe.ingredients.length > 0 && (
-            <div className="px-6 py-4">
-              <h2 className="text-lg font-bold text-[#1A1A1A] mb-3">Ingredients</h2>
-              <ul className="space-y-2">
-                {recipe.ingredients.map((ingredient, i) => (
-                  <li key={i} className="flex items-start gap-3 text-[#3A3A3A]">
-                    <span className="w-5 h-5 mt-0.5 flex-shrink-0 rounded-full border-2 border-[#C49A5C]/30" />
-                    <span className="text-sm leading-relaxed">{ingredient}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* Two-Column: Ingredients + Steps on desktop */}
+          <div className="px-6 py-4 grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-6">
+            {/* Ingredients */}
+            {recipe.ingredients.length > 0 && (
+              <div>
+                <h2 className="text-lg font-bold text-[#1A1A1A] mb-3">Ingredients</h2>
+                <div className="bg-white rounded-2xl p-4 shadow-sm">
+                  <ul className="space-y-2.5">
+                    {recipe.ingredients.map((ingredient, i) => (
+                      <li key={i} className="flex items-start gap-3 text-[#3A3A3A]">
+                        <span className="w-5 h-5 mt-0.5 flex-shrink-0 rounded-full border-2 border-[#C49A5C]/30" />
+                        <span className="text-sm leading-relaxed">{ingredient}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
 
-          {/* Steps */}
-          {recipe.steps.length > 0 && (
-            <div className="px-6 py-4">
-              <h2 className="text-lg font-bold text-[#1A1A1A] mb-3">Instructions</h2>
-              <ol className="space-y-4">
-                {recipe.steps.map((step, i) => (
-                  <li key={i} className="flex gap-4">
-                    <span className="w-7 h-7 flex-shrink-0 rounded-full bg-[#C49A5C] text-white text-xs font-bold flex items-center justify-center">
-                      {i + 1}
-                    </span>
-                    <p className="text-sm text-[#3A3A3A] leading-relaxed pt-1">{step}</p>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
+            {/* Steps with step-tracking */}
+            {recipe.steps.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-bold text-[#1A1A1A]">Instructions</h2>
+                  <span className="text-xs text-[#6E6A60]">
+                    {checkedSteps.size}/{recipe.steps.length} done
+                  </span>
+                </div>
+                <ol className="space-y-3">
+                  {recipe.steps.map((step, i) => (
+                    <li
+                      key={i}
+                      onClick={() => toggleStep(i)}
+                      className={`flex gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-200 ${
+                        checkedSteps.has(i)
+                          ? 'bg-[#C49A5C]/8 opacity-60'
+                          : 'bg-white shadow-sm hover:shadow-md'
+                      }`}
+                    >
+                      <span className={`w-7 h-7 flex-shrink-0 rounded-full text-xs font-bold flex items-center justify-center transition-all ${
+                        checkedSteps.has(i)
+                          ? 'bg-[#C49A5C] text-white'
+                          : 'bg-[#F4F2EA] text-[#C49A5C]'
+                      }`}>
+                        {checkedSteps.has(i) ? <Check className="w-3.5 h-3.5" /> : i + 1}
+                      </span>
+                      <p className={`text-sm leading-relaxed pt-0.5 ${
+                        checkedSteps.has(i) ? 'line-through text-[#6E6A60]' : 'text-[#3A3A3A]'
+                      }`}>{step}</p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
 
           {/* Why It Works */}
           {recipe.whyItWorks && (
@@ -178,7 +271,7 @@ export default function RecipeDetailOverlay({
         <div className="absolute bottom-0 left-0 right-0 bg-[#F4F2EA]/95 backdrop-blur-md border-t border-[#E8E6DC] px-6 py-3 flex items-center gap-3">
           <button
             onClick={() => onToggleFavorite(recipe)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-colors btn-press ${
               isFavorite
                 ? 'bg-red-50 text-red-500 border border-red-200'
                 : 'bg-white text-[#6E6A60] border border-[#E8E6DC] hover:border-[#C49A5C]/40'
@@ -190,7 +283,7 @@ export default function RecipeDetailOverlay({
 
           <button
             onClick={() => onAddToPlanner(recipe)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#C49A5C] text-white rounded-full text-sm font-semibold hover:bg-[#8B6F3C] transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#C49A5C] text-white rounded-full text-sm font-semibold hover:bg-[#8B6F3C] transition-colors btn-press"
           >
             <Calendar className="w-4 h-4" />
             Add to Planner
@@ -198,10 +291,18 @@ export default function RecipeDetailOverlay({
 
           <button
             onClick={() => onShareRecipe(recipe)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#6E6A60] border border-[#E8E6DC] rounded-full text-sm font-semibold hover:border-[#C49A5C]/40 transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#6E6A60] border border-[#E8E6DC] rounded-full text-sm font-semibold hover:border-[#C49A5C]/40 transition-colors btn-press"
           >
             <Share2 className="w-4 h-4" />
             Share
+          </button>
+
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#6E6A60] border border-[#E8E6DC] rounded-full text-sm font-semibold hover:border-[#C49A5C]/40 transition-colors btn-press hidden sm:flex"
+          >
+            <Printer className="w-4 h-4" />
+            Print
           </button>
 
           <button

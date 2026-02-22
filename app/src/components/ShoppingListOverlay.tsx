@@ -22,7 +22,7 @@ export default function ShoppingListOverlay({
   onClose,
 }: ShoppingListOverlayProps) {
   return (
-    <div className="fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[203] flex flex-col overflow-y-auto">
+    <div className="fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[203] flex flex-col overflow-y-auto animate-overlay-in">
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-5 border-b border-black/5">
         <div className="flex items-center gap-3">
@@ -56,11 +56,26 @@ export default function ShoppingListOverlay({
       <div className="flex-1 px-8 py-6">
         <div className="max-w-3xl mx-auto">
           {shoppingList.length === 0 ? (
-            <div className="text-center py-20">
-              <ShoppingCart className="w-16 h-16 text-[#E8E6DC] mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-[#1A1A1A] mb-2">No items yet</h3>
-              <p className="text-[#6E6A60] mb-6">Add meals to your planner, then generate a shopping list.</p>
-              <Button onClick={onOpenPlanner} className="bg-[#C49A5C] text-white hover:bg-[#8B6F3C] rounded-full">
+            <div className="text-center py-20 max-w-md mx-auto">
+              {/* Inline illustration — shopping bag */}
+              <div className="relative w-32 h-32 mx-auto mb-6">
+                <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                  {/* Bag body */}
+                  <rect x="28" y="50" width="72" height="56" rx="8" fill="#F4F2EA" stroke="#E8E6DC" strokeWidth="2" />
+                  {/* Bag handles */}
+                  <path d="M44 50 C44 36, 52 28, 64 28 C76 28, 84 36, 84 50" stroke="#C49A5C" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.6" />
+                  {/* Vegetables peeking out */}
+                  <ellipse cx="48" cy="50" rx="6" ry="10" fill="#8B9E6B" opacity="0.5" />
+                  <ellipse cx="64" cy="48" rx="5" ry="12" fill="#C49A5C" opacity="0.4" />
+                  <ellipse cx="78" cy="50" rx="6" ry="9" fill="#A8B590" opacity="0.5" />
+                  {/* Checkmark on bag */}
+                  <circle cx="64" cy="78" r="12" fill="#C49A5C" opacity="0.15" />
+                  <path d="M58 78 L62 82 L70 74" stroke="#C49A5C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-[#1A1A1A] mb-2">your list is empty</h3>
+              <p className="text-[#6E6A60] text-sm leading-relaxed mb-6">Add meals to your planner first, then we'll generate a smart shopping list grouped by aisle.</p>
+              <Button onClick={onOpenPlanner} className="bg-[#C49A5C] text-white hover:bg-[#8B6F3C] rounded-full btn-press">
                 Open Meal Planner
               </Button>
             </div>

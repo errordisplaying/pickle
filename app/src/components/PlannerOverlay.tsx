@@ -70,7 +70,7 @@ export default function PlannerOverlay({
   };
 
   return (
-        <div className="fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[200] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[200] flex flex-col overflow-hidden animate-overlay-in">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-black/5 flex-shrink-0">
             <div className="flex items-center gap-3">
