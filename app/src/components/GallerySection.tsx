@@ -1,6 +1,7 @@
 import { Clock, Flame, Heart, Star, Sparkles } from 'lucide-react';
 import { toTitleCase } from '@/utils';
 import type { SavedRecipe, ScoredRecipe } from '@/types';
+import OptimizedImage from '@/components/OptimizedImage';
 
 interface GallerySectionProps {
   galleryRef: React.RefObject<HTMLDivElement | null>;
@@ -55,10 +56,10 @@ export default function GallerySection({ galleryRef, recipes, onToggleFavorite, 
                 className="gallery-card group relative w-[260px] h-full flex-shrink-0 rounded-[28px] overflow-hidden cursor-pointer shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]"
               >
                 {/* Hero Image */}
-                <img
+                <OptimizedImage
                   src={recipe.image}
                   alt={recipe.name}
-                  className="absolute inset-0 w-full h-full object-cover image-grade transition-transform duration-500 group-hover:scale-105"
+                  className="absolute inset-0 w-full h-full image-grade transition-transform duration-500 group-hover:scale-105"
                 />
 
                 {/* Gradient overlay — always visible */}

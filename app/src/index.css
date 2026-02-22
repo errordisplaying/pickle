@@ -322,3 +322,10 @@
   background-size: 200% 100%;
   animation: shimmer 2s ease-in-out infinite;
 }
+
+/* Blur-up image placeholder shimmer */
+.shimmer-placeholder {
+  background: linear-gradient(90deg, #E8E6DC 0%, #F4F2EA 40%, #E8E6DC 80%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}

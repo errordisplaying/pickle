@@ -37,6 +37,7 @@ import NutritionGoalsModal from '@/components/NutritionGoalsModal';
 import ShoppingListOverlay from '@/components/ShoppingListOverlay';
 import AuthModal from '@/components/AuthModal';
 import RecipeDetailOverlay from '@/components/RecipeDetailOverlay';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -849,39 +850,47 @@ function App() {
       <SponsoredSection className="z-15" />
 
       {/* Section 2: Nutrition Goals */}
-      <NutritionSection
-        nutritionRef={nutritionRef}
-        nutritionGoals={nutritionGoals}
-        onUpdateGoals={(goals) => { trackEvent(EVENTS.NUTRITION_GOALS_UPDATED, { goals }); setNutritionGoals(goals); }}
-      />
+      <ErrorBoundary>
+        <NutritionSection
+          nutritionRef={nutritionRef}
+          nutritionGoals={nutritionGoals}
+          onUpdateGoals={(goals) => { trackEvent(EVENTS.NUTRITION_GOALS_UPDATED, { goals }); setNutritionGoals(goals); }}
+        />
+      </ErrorBoundary>
 
       {/* Section 3: Recipe Gallery */}
-      <GallerySection
-        galleryRef={galleryRef}
-        recipes={personalizedRecipes}
-        onToggleFavorite={toggleFavorite}
-        isFavorite={isFavorite}
-        onOpenRecipe={(recipe) => {
-          trackEvent(EVENTS.RECIPE_DETAIL_OPEN, { recipeName: recipe.name, tags: recipe.tags });
-          setSelectedGalleryRecipe(recipe);
-        }}
-      />
+      <ErrorBoundary>
+        <GallerySection
+          galleryRef={galleryRef}
+          recipes={personalizedRecipes}
+          onToggleFavorite={toggleFavorite}
+          isFavorite={isFavorite}
+          onOpenRecipe={(recipe) => {
+            trackEvent(EVENTS.RECIPE_DETAIL_OPEN, { recipeName: recipe.name, tags: recipe.tags });
+            setSelectedGalleryRecipe(recipe);
+          }}
+        />
+      </ErrorBoundary>
 
       {/* Partner Offers */}
       <PartnerOffersSection />
 
       {/* Section 4: Smart Substitutions */}
-      <SmartSwapSection substituteRef={substituteRef} />
+      <ErrorBoundary>
+        <SmartSwapSection substituteRef={substituteRef} />
+      </ErrorBoundary>
 
       {/* Section 5: Meal Planner Preview */}
-      <PlannerPreviewSection
-        plannerRef={plannerRef}
-        plannerMeals={plannerMeals}
-        onOpenPlanner={(day) => {
-          if (day) setPlannerActiveDay(day);
-          setPlannerOpen(true);
-        }}
-      />
+      <ErrorBoundary>
+        <PlannerPreviewSection
+          plannerRef={plannerRef}
+          plannerMeals={plannerMeals}
+          onOpenPlanner={(day) => {
+            if (day) setPlannerActiveDay(day);
+            setPlannerOpen(true);
+          }}
+        />
+      </ErrorBoundary>
 
       {/* Planner Full-Screen Overlay (portalled to escape GSAP transforms) */}
       {plannerOpen && createPortal(
@@ -943,7 +952,9 @@ function App() {
       )}
 
       {/* Section 6: Community Favorites */}
-      <CommunitySection communityRef={communityRef} />
+      <ErrorBoundary>
+        <CommunitySection communityRef={communityRef} />
+      </ErrorBoundary>
 
       {/* Recommended Essentials */}
       <SponsoredSection title="Sponsored &middot; Recommended Kitchen Essentials" className="bg-warm-gray z-[65]" />

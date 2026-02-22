@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Leaf, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { swapCategories, smartSwaps } from '@/data';
+import OptimizedImage from '@/components/OptimizedImage';
 
 interface SmartSwapSectionProps {
   substituteRef: React.RefObject<HTMLDivElement | null>;
@@ -42,7 +43,7 @@ export default function SmartSwapSection({ substituteRef }: SmartSwapSectionProp
 
         {/* Image */}
         <div className="h-[36vh] japandi-card">
-          <img src="/substitute_eggs_dairy.jpg" alt="Ingredients" className="w-full h-full object-cover image-grade" />
+          <OptimizedImage src="/substitute_eggs_dairy.jpg" alt="Ingredients" className="w-full h-full image-grade" />
         </div>
       </div>
 

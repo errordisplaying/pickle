@@ -477,7 +477,7 @@ export default function HeroSection({
                   return (
                     <>
                       <div className="relative h-56 sm:h-72">
-                        <img src={recipe.image} alt={recipe.name} className="w-full h-full object-cover image-grade" />
+                        <img src={recipe.image} alt={recipe.name} loading="lazy" decoding="async" className="w-full h-full object-cover image-grade" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                         <button
                           onClick={() => setExpandedRecipe(null)}
@@ -627,6 +627,8 @@ export default function HeroSection({
                       <img
                         src={recipe.image}
                         alt={recipe.name}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover image-grade transition-transform duration-500 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
