@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import recipeRoutes from './routes/recipes.js';
 import analyticsRoutes from './routes/analytics.js';
+import chatRoutes from './routes/chat.js';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api', recipeRoutes);
+app.use('/api', chatRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
 // Root endpoint
@@ -39,6 +41,7 @@ app.get('/', (_req, res) => {
       'GET /api/scraper-status': 'Scraper health & diagnostics',
       'POST /api/analytics/events': 'Ingest analytics events (batched)',
       'GET /api/analytics/ingredients': 'Ingredient frequency data',
+      'POST /api/chat': 'Test Kitchen AI cooking companion',
       'GET /api/analytics/dashboard': 'Aggregate analytics dashboard',
     },
   });
@@ -50,6 +53,7 @@ app.listen(PORT, () => {
   console.log(`   POST /api/recipes           — Search for recipes`);
   console.log(`   GET  /api/health            — Health check`);
   console.log(`   GET  /api/scraper-status    — Scraper diagnostics`);
+  console.log(`   POST /api/chat              — Test Kitchen AI companion`);
   console.log(`   POST /api/analytics/events  — Ingest analytics events`);
   console.log(`   GET  /api/analytics/ingredients — Ingredient stats`);
   console.log(`   GET  /api/analytics/dashboard   — Dashboard\n`);

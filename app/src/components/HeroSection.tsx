@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Search, Beaker, Clock, X, Plus,
-  Heart, ArrowRight,
+  Heart, ArrowRight, Send,
   Flame, UtensilsCrossed, BadgeCheck,
   Share2, Calendar
 } from 'lucide-react';
@@ -11,9 +11,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import type { SavedRecipe, DietaryFilter } from '@/types';
+import type { SavedRecipe, DietaryFilter, ChatMessage } from '@/types';
 import { DIETARY_FILTERS, SERVING_MULTIPLIERS } from '@/constants';
 import { normalizeScrapedRecipe, toTitleCase, scaleNutrition } from '@/utils';
+import { trackEvent, EVENTS } from '@/utils/analytics';
 
 interface HeroSectionProps {
   heroRef: React.RefObject<HTMLDivElement | null>;
@@ -85,11 +86,16 @@ export default function HeroSection({
   // ── Local State: Test Kitchen ──────────────────────────────────
   const [tkDishName, setTkDishName] = useState('');
   const [tkIngredients, setTkIngredients] = useState<string[]>([]);
-  const [tkIterations, setTkIterations] = useState<any[]>([]);
-  const [tkCommand, setTkCommand] = useState('');
   const [tkActive, setTkActive] = useState(false);
-  const [tkResponse, setTkResponse] = useState('');
+  const [tkMessages, setTkMessages] = useState<ChatMessage[]>([]);
+  const [tkInput, setTkInput] = useState('');
   const [tkLoading, setTkLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll chat to bottom when messages change
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [tkMessages.length, tkLoading]);
 
   // ── Local Functions ────────────────────────────────────────────
   const addIngredientChip = () => {
@@ -108,48 +114,58 @@ export default function HeroSection({
   const startTestKitchen = () => {
     if (!tkDishName.trim() || tkIngredients.length === 0) return;
     setTkActive(true);
-    setTkIterations([]);
-    setTkResponse(`Test Kitchen Started!\n\nDish: ${tkDishName}\nAvailable ingredients: ${tkIngredients.join(', ')}\n\nI'm ready to help you iterate! Try these commands:\n\n• taste: it needs more salt\n• adjust: added 1 tsp chili flakes\n• note: the aroma is amazing\n• add: garlic (2 cloves)\n• remove: onion\n• status - see overview\n• export summary - get full log`);
+    setTkMessages([{
+      role: 'assistant',
+      content: `Hey! I'm here to help you cook ${tkDishName}. Ask me anything — substitutions, technique, timing, or flavor adjustments. Let's cook!`,
+      timestamp: Date.now(),
+    }]);
   };
 
-  const processTestKitchenCommand = () => {
-    if (!tkCommand.trim()) return;
-    const cmd = tkCommand.trim();
-    setTkCommand('');
+  const sendMessage = useCallback(async (text: string) => {
+    const content = text.trim();
+    if (!content || tkLoading) return;
+
+    const userMsg: ChatMessage = { role: 'user', content, timestamp: Date.now() };
+    setTkMessages(prev => [...prev, userMsg]);
+    setTkInput('');
     setTkLoading(true);
 
-    setTimeout(() => {
-      let newResponse = '';
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const allMessages = [...tkMessages, userMsg].map(m => ({ role: m.role, content: m.content }));
 
-      if (cmd.toLowerCase().startsWith('taste:')) {
-        const feedback = cmd.substring(6).trim();
-        setTkIterations(prev => [...prev, { type: 'taste', content: feedback, timestamp: new Date().toISOString() }]);
-        newResponse = `Tasting note recorded: ${feedback}\n\nSuggestions:\n1. Try adding a pinch of salt to enhance flavors\n2. A splash of acid like lemon juice can brighten the dish\n3. Consider adding fresh herbs for complexity`;
-      } else if (cmd.toLowerCase().startsWith('adjust:')) {
-        const adjustment = cmd.substring(7).trim();
-        setTkIterations(prev => [...prev, { type: 'adjust', content: adjustment, timestamp: new Date().toISOString() }]);
-        newResponse = `Adjustment logged: ${adjustment}\n\nGreat! Use "taste:" to record how this change affected the dish.`;
-      } else if (cmd.toLowerCase().startsWith('note:')) {
-        const note = cmd.substring(5).trim();
-        setTkIterations(prev => [...prev, { type: 'note', content: note, timestamp: new Date().toISOString() }]);
-        newResponse = `Noted: ${note}`;
-      } else if (cmd.toLowerCase() === 'status') {
-        newResponse = `Status Update\n\nDish: ${tkDishName}\nIngredients: ${tkIngredients.join(', ')}\nTotal iterations: ${tkIterations.length}`;
+      const res = await fetch(`${apiUrl}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: allMessages,
+          context: { dishName: tkDishName, ingredients: tkIngredients },
+        }),
+      });
+
+      if (res.status === 429) {
+        setTkMessages(prev => [...prev, { role: 'system', content: 'Too many messages — give me a sec!', timestamp: Date.now() }]);
+      } else if (!res.ok) {
+        setTkMessages(prev => [...prev, { role: 'system', content: 'Chickpea is taking a break. Try again in a moment.', timestamp: Date.now() }]);
       } else {
-        newResponse = `Tip for "${cmd}":\n\nTry these commands:\n• taste: [feedback] - Record what you're tasting\n• adjust: [change] - Log adjustments\n• note: [observation] - Save notes\n• status - See session overview`;
+        const data = await res.json();
+        setTkMessages(prev => [...prev, { role: 'assistant', content: data.message, timestamp: Date.now() }]);
       }
 
-      setTkResponse(prev => prev + '\n\n' + newResponse);
+      trackEvent(EVENTS.TEST_KITCHEN_MESSAGE, { dishName: tkDishName });
+    } catch {
+      setTkMessages(prev => [...prev, { role: 'system', content: 'Could not reach Chickpea. Check your connection.', timestamp: Date.now() }]);
+    } finally {
       setTkLoading(false);
-    }, 800);
-  };
+    }
+  }, [tkMessages, tkDishName, tkIngredients, tkLoading]);
 
   const endTestKitchen = () => {
     setTkActive(false);
     setTkDishName('');
     setTkIngredients([]);
-    setTkIterations([]);
-    setTkResponse('');
+    setTkMessages([]);
+    setTkInput('');
   };
 
   return (
@@ -369,51 +385,81 @@ export default function HeroSection({
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="bg-[#C49A5C] rounded-2xl p-4 text-white">
-              <div className="flex items-center gap-2 mb-2">
+          <div className="space-y-3">
+            {/* Session header */}
+            <div className="bg-[#C49A5C] rounded-2xl p-3 text-white">
+              <div className="flex items-center gap-2 mb-1.5">
                 <Beaker className="w-4 h-4" />
                 <span className="text-xs font-medium opacity-80">Test Kitchen Active</span>
               </div>
-              <h3 className="font-bold text-lg">{tkDishName}</h3>
-              <div className="flex flex-wrap gap-1 mt-2">
+              <h3 className="font-bold text-sm">{tkDishName}</h3>
+              <div className="flex flex-wrap gap-1 mt-1.5">
                 {tkIngredients.map((ing, idx) => (
                   <span key={idx} className="text-xs bg-white/20 px-2 py-0.5 rounded-full">{ing}</span>
                 ))}
               </div>
             </div>
 
+            {/* Chat messages */}
+            <div className="bg-[#E8E6DC] rounded-2xl p-3 max-h-[280px] overflow-y-auto space-y-2.5">
+              {tkMessages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
+                      msg.role === 'user'
+                        ? 'bg-[#C49A5C] text-white rounded-br-md'
+                        : msg.role === 'system'
+                        ? 'bg-[#F4F2EA] text-[#C49A5C] italic border border-[#C49A5C]/20 rounded-bl-md'
+                        : 'bg-white text-[#1A1A1A] shadow-sm rounded-bl-md'
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {tkLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-white text-[#6E6A60] px-4 py-2.5 rounded-2xl rounded-bl-md shadow-sm flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-[#C49A5C] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-[#C49A5C] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-[#C49A5C] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Message input */}
             <div className="flex gap-2">
               <Input
-                value={tkCommand}
-                onChange={(e) => setTkCommand(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && processTestKitchenCommand()}
-                placeholder='Try: "taste: needs salt"'
+                value={tkInput}
+                onChange={(e) => setTkInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage(tkInput)}
+                placeholder="Ask Chickpea anything..."
                 className="bg-white border-[#E8E6DC] rounded-2xl text-sm flex-1"
                 disabled={tkLoading}
               />
               <Button
-                onClick={processTestKitchenCommand}
-                disabled={tkLoading || !tkCommand.trim()}
-                className="bg-[#C49A5C] text-white rounded-full px-4"
+                onClick={() => sendMessage(tkInput)}
+                disabled={tkLoading || !tkInput.trim()}
+                className="bg-[#C49A5C] text-white rounded-full px-3 btn-press"
               >
-                {tkLoading ? '...' : 'Go'}
+                <Send className="w-4 h-4" />
               </Button>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <button onClick={() => setTkCommand('status')} className="text-xs bg-[#E8E6DC] px-3 py-1.5 rounded-full hover:bg-[#ddd9cc]">Status</button>
-              <button onClick={() => setTkCommand('undo')} className="text-xs bg-[#E8E6DC] px-3 py-1.5 rounded-full hover:bg-[#ddd9cc]">Undo</button>
-              <button onClick={() => setTkCommand('export summary')} className="text-xs bg-[#E8E6DC] px-3 py-1.5 rounded-full hover:bg-[#ddd9cc]">Export</button>
+            {/* Quick suggestion chips */}
+            <div className="flex flex-wrap gap-1.5">
+              <button onClick={() => sendMessage('What temperature should I cook this at?')} className="text-xs bg-white text-[#6E6A60] px-3 py-1.5 rounded-full hover:bg-[#E8E6DC] border border-black/5 transition-colors">What temp?</button>
+              <button onClick={() => sendMessage('What substitutions can I make?')} className="text-xs bg-white text-[#6E6A60] px-3 py-1.5 rounded-full hover:bg-[#E8E6DC] border border-black/5 transition-colors">Substitutions?</button>
+              <button onClick={() => sendMessage('How should I time the different parts of this dish?')} className="text-xs bg-white text-[#6E6A60] px-3 py-1.5 rounded-full hover:bg-[#E8E6DC] border border-black/5 transition-colors">Timing</button>
+              <button onClick={() => sendMessage('How can I make this dish healthier?')} className="text-xs bg-white text-[#6E6A60] px-3 py-1.5 rounded-full hover:bg-[#E8E6DC] border border-black/5 transition-colors">Healthier</button>
             </div>
 
-            {tkResponse && (
-              <div className="bg-[#E8E6DC] rounded-2xl p-4 max-h-[200px] overflow-y-auto">
-                <pre className="text-xs text-[#1A1A1A] whitespace-pre-wrap font-inter">{tkResponse}</pre>
-              </div>
-            )}
-
-            <Button onClick={endTestKitchen} variant="outline" className="w-full rounded-full">
+            <Button onClick={endTestKitchen} variant="outline" className="w-full rounded-full text-sm">
               End Session
             </Button>
           </div>

@@ -42,6 +42,9 @@ export const EVENTS = {
   // Smart Swap
   SWAP_SEARCH: 'swap_search',
   SWAP_SUGGESTION_SUBMITTED: 'swap_suggestion_submitted',
+
+  // Test Kitchen
+  TEST_KITCHEN_MESSAGE: 'test_kitchen_message',
 } as const;
 
 // ── Session Management ───────────────────────────────────────────

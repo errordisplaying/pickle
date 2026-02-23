@@ -116,3 +116,11 @@ export interface SwapSuggestionForm {
   note: string;
   ratio: string;
 }
+
+// ── Test Kitchen Types ───────────────────────────────────────────
+
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: number;
+}
