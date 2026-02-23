@@ -878,7 +878,13 @@ function App() {
 
       {/* Section 4: Smart Substitutions */}
       <ErrorBoundary>
-        <SmartSwapSection substituteRef={substituteRef} />
+        <SmartSwapSection
+          substituteRef={substituteRef}
+          session={session}
+          userProfile={userProfile}
+          showToast={showToast}
+          onOpenAuth={() => setAuthModalOpen(true)}
+        />
       </ErrorBoundary>
 
       {/* Section 5: Meal Planner Preview */}

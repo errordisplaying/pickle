@@ -89,3 +89,30 @@ export interface AnalyticsEvent {
   sessionId: string;
   userId?: string;
 }
+
+// ── SmartSwap Types ──────────────────────────────────────────────
+
+export interface SmartSwap {
+  original: string;
+  swap: string;
+  category: string;
+  note: string;
+  ratio: string;
+}
+
+export interface CommunitySwap extends SmartSwap {
+  id: string;
+  user_id: string;
+  display_name: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  upvotes: number;
+}
+
+export interface SwapSuggestionForm {
+  original: string;
+  swap: string;
+  category: string;
+  note: string;
+  ratio: string;
+}

@@ -38,6 +38,10 @@ export const EVENTS = {
   // Auth
   USER_SIGNED_IN: 'user_signed_in',
   USER_SIGNED_OUT: 'user_signed_out',
+
+  // Smart Swap
+  SWAP_SEARCH: 'swap_search',
+  SWAP_SUGGESTION_SUBMITTED: 'swap_suggestion_submitted',
 } as const;
 
 // ── Session Management ───────────────────────────────────────────
