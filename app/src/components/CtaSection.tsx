@@ -1,4 +1,4 @@
-import { Sparkles, ArrowUp, Heart } from 'lucide-react';
+import { Sparkles, ArrowUp, Heart, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -90,6 +90,15 @@ export default function CtaSection({ ctaRef, onStartCooking }: CtaSectionProps) 
                   <a href="#" className="block text-sm text-[#A09A90] hover:text-white transition-colors">Affiliates</a>
                 </div>
               </div>
+              <div>
+                <p className="text-xs font-semibold text-[#C49A5C] uppercase tracking-wider mb-3">Contact</p>
+                <div className="space-y-2">
+                  <a href="mailto:lokekhayvin@gmail.com" className="flex items-center gap-1.5 text-sm text-[#A09A90] hover:text-white transition-colors">
+                    <Mail className="w-3.5 h-3.5" /> Email Us
+                  </a>
+                  <a href="mailto:ads@chickpea.kitchen" className="block text-sm text-[#A09A90] hover:text-white transition-colors">Advertise</a>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -99,7 +108,7 @@ export default function CtaSection({ ctaRef, onStartCooking }: CtaSectionProps) 
           {/* Bottom */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-[#6E6A60]">
-              chickpea is free. We earn commissions through affiliate links at no extra cost to you.
+              © {new Date().getFullYear()} ViN. All rights reserved.
             </p>
             <div className="flex items-center gap-2 text-xs text-[#6E6A60]">
               <span>Made with</span>
