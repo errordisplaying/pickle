@@ -1,0 +1,62 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#F7F3EB" />
+
+  <!-- Subtle warm grain texture -->
+  <rect width="1200" height="630" fill="url(#grain)" opacity="0.03" />
+
+  <!-- Top accent bar -->
+  <rect y="0" width="1200" height="6" fill="#C49A5C" />
+
+  <!-- Chickpea logo (centered, enlarged) -->
+  <g transform="translate(510, 140) scale(1.8)">
+    <ellipse cx="32" cy="34" rx="26" ry="24" fill="#D4A96A" />
+    <ellipse cx="32" cy="34" rx="26" ry="24" fill="url(#og-grad)" />
+    <path d="M32 14 C30 22, 26 30, 28 54" stroke="#C49555" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.7" />
+    <ellipse cx="24" cy="28" rx="8" ry="5" fill="white" opacity="0.18" transform="rotate(-20 24 28)" />
+    <circle cx="32" cy="12" r="5" fill="#8B9E6B" />
+    <circle cx="28" cy="10" r="3.5" fill="#7A8E5C" />
+  </g>
+
+  <!-- Brand name -->
+  <text x="600" y="340" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="72" font-weight="900" fill="#1A1A1A" letter-spacing="-2">
+    chickpea
+  </text>
+
+  <!-- Tagline -->
+  <text x="600" y="395" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="28" font-weight="400" fill="#6E6A60">
+    cook with what you have
+  </text>
+
+  <!-- Divider line -->
+  <line x1="500" y1="430" x2="700" y2="430" stroke="#C49A5C" stroke-width="2" stroke-linecap="round" opacity="0.5" />
+
+  <!-- Features row -->
+  <text x="600" y="475" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="500" fill="#A09A90" letter-spacing="3">
+    RECIPES  ·  MEAL PLANNER  ·  NUTRITION  ·  SMART SWAP
+  </text>
+
+  <!-- URL -->
+  <text x="600" y="570" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="20" font-weight="600" fill="#C49A5C">
+    chickpea.kitchen
+  </text>
+
+  <!-- Bottom accent bar -->
+  <rect y="624" width="1200" height="6" fill="#C49A5C" />
+
+  <!-- Decorative corner dots -->
+  <circle cx="40" cy="40" r="4" fill="#C49A5C" opacity="0.2" />
+  <circle cx="1160" cy="40" r="4" fill="#C49A5C" opacity="0.2" />
+  <circle cx="40" cy="590" r="4" fill="#C49A5C" opacity="0.2" />
+  <circle cx="1160" cy="590" r="4" fill="#C49A5C" opacity="0.2" />
+
+  <defs>
+    <radialGradient id="og-grad" cx="0.35" cy="0.3" r="0.7">
+      <stop offset="0%" stop-color="#E8C088" />
+      <stop offset="100%" stop-color="#B8864A" />
+    </radialGradient>
+    <pattern id="grain" width="4" height="4" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.5" fill="#8B6F3C" />
+    </pattern>
+  </defs>
+</svg>
