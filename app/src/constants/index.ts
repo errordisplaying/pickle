@@ -1,6 +1,6 @@
 import type { DietaryFilter, NutritionGoals, IngredientCategory } from '@/types';
 
-export const DIETARY_FILTERS: DietaryFilter[] = ['Vegan', 'Vegetarian', 'Gluten-Free', 'Dairy-Free', 'Keto', 'Nut-Free'];
+export const DIETARY_FILTERS: DietaryFilter[] = ['Vegan', 'Vegetarian', 'Gluten-Free', 'Dairy-Free', 'Keto', 'Nut-Free', 'Kosher', 'Halal'];
 export const SERVING_MULTIPLIERS = [0.5, 1, 1.5, 2, 3, 4];
 
 export const DEFAULT_NUTRITION_GOALS: NutritionGoals = { calories: 2000, protein: 150, carbs: 250, fat: 65 };

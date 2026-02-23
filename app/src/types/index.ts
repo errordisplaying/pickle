@@ -40,7 +40,7 @@ export interface Toast {
   timestamp: number;
 }
 
-export type DietaryFilter = 'Vegan' | 'Vegetarian' | 'Gluten-Free' | 'Dairy-Free' | 'Keto' | 'Nut-Free';
+export type DietaryFilter = 'Vegan' | 'Vegetarian' | 'Gluten-Free' | 'Dairy-Free' | 'Keto' | 'Nut-Free' | 'Kosher' | 'Halal';
 
 export interface NutritionGoals {
   calories: number;
