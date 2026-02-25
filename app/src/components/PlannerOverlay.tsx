@@ -12,12 +12,12 @@ import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { SavedRecipe, PlannerWeek, NutritionGoals } from '@/types';
-import { suggestedRecipes } from '@/data';
 import {
-  normalizeGalleryRecipe, toTitleCase,
+  toTitleCase,
   getDayNutrition, getWeeklyNutrition,
   getNutritionProgressColor, getNutritionProgressPct,
-  parseNutritionValue, generateGoogleCalendarUrl
+  parseNutritionValue, generateGoogleCalendarUrl,
+  getAllBrowseRecipes, BROWSE_TAGS,
 } from '@/utils';
 import DraggableRecipeCard from '@/components/planner/DraggableRecipeCard';
 import DroppableMealSlot from '@/components/planner/DroppableMealSlot';
@@ -68,6 +68,7 @@ export default function PlannerOverlay({
   const [plannerSidebarTab, setPlannerSidebarTab] = useState<'saved' | 'recent' | 'browse'>('saved');
   const [plannerSearchQuery, setPlannerSearchQuery] = useState('');
   const [plannerSidebarOpen, setPlannerSidebarOpen] = useState(false);
+  const [browseTag, setBrowseTag] = useState<string>('All');
   const [activeRecipe, setActiveRecipe] = useState<SavedRecipe | null>(null);
 
   const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 8 } });
@@ -101,7 +102,10 @@ export default function PlannerOverlay({
     } else if (plannerSidebarTab === 'recent') {
       pool = recentRecipes;
     } else {
-      pool = suggestedRecipes.map((r: any) => normalizeGalleryRecipe(r));
+      pool = getAllBrowseRecipes();
+      if (browseTag !== 'All') {
+        pool = pool.filter(r => r.tags.some(t => t.toLowerCase() === browseTag.toLowerCase()));
+      }
     }
 
     if (!q) return pool;
@@ -194,10 +198,29 @@ export default function PlannerOverlay({
                     : 'text-[#6E6A60] hover:text-[#1A1A1A]'
                 }`}
               >
-                {tab === 'saved' ? `Saved (${favorites.length})` : tab === 'recent' ? `Recent (${recentRecipes.length})` : 'Browse'}
+                {tab === 'saved' ? `Saved (${favorites.length})` : tab === 'recent' ? `Recent (${recentRecipes.length})` : `Browse (${getAllBrowseRecipes().length})`}
               </button>
             ))}
           </div>
+
+          {/* Browse Tag Filters */}
+          {plannerSidebarTab === 'browse' && (
+            <div className="flex gap-1.5 px-3 py-2.5 overflow-x-auto scrollbar-hide border-b border-[#E8E6DC] flex-shrink-0">
+              {BROWSE_TAGS.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => setBrowseTag(tag)}
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap transition-colors ${
+                    browseTag === tag
+                      ? 'bg-[#C49A5C] text-white'
+                      : 'bg-[#F4F2EA] text-[#6E6A60] hover:bg-[#E8E6DC]'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Recipe Cards List */}
           <div className="flex-1 overflow-y-auto p-3 space-y-1.5 planner-sidebar-scroll">

@@ -1,6 +1,6 @@
 import type { SavedRecipe, PlannerWeek, RecipeNutrition, ShoppingItem, IngredientCategory } from '@/types';
 import { INGREDIENT_CATEGORIES, categorizeIngredient } from '@/constants';
-import { demoRecipes } from '@/data';
+import { demoRecipes, suggestedRecipes } from '@/data';
 
 // ── localStorage Utilities ───────────────────────────────────────
 export const loadFromStorage = <T,>(key: string, fallback: T): T => {
@@ -80,6 +80,68 @@ export const normalizeGalleryRecipe = (recipe: any): SavedRecipe => {
     source: 'gallery',
   };
 };
+
+// ── Browse Recipes (merged demo + suggested, deduplicated) ──────
+
+const DEMO_CATEGORY_TAGS: Record<string, string> = {
+  chicken: 'Chicken',
+  beef: 'Beef',
+  vegetarian: 'Vegetarian',
+  seafood: 'Seafood',
+  pasta: 'Pasta',
+  quick: 'Quick',
+};
+
+let _browseRecipesCache: SavedRecipe[] | null = null;
+
+export const getAllBrowseRecipes = (): SavedRecipe[] => {
+  if (_browseRecipesCache) return _browseRecipesCache;
+
+  const seen = new Set<string>();
+  const recipes: SavedRecipe[] = [];
+
+  // 1. Flatten demo recipes (richest data — ingredients, steps, description)
+  for (const [category, items] of Object.entries(demoRecipes)) {
+    for (const r of items as any[]) {
+      const key = r.name.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const totalTime = r.prepTime && r.cookTime
+        ? `${(parseInt(r.prepTime) || 0) + (parseInt(r.cookTime) || 0)} min`
+        : r.prepTime || r.cookTime || 'N/A';
+      recipes.push({
+        id: generateRecipeId(r.name),
+        name: r.name,
+        description: r.description || '',
+        prepTime: r.prepTime || 'N/A',
+        cookTime: r.cookTime || 'N/A',
+        totalTime,
+        ingredients: r.ingredients || [],
+        steps: r.steps || [],
+        whyItWorks: r.whyItWorks || '',
+        nutrition: r.nutrition || { calories: 0, protein: '0g', carbs: '0g', fat: '0g' },
+        image: r.image || '',
+        tags: [DEMO_CATEGORY_TAGS[category] || category].filter(Boolean),
+        difficulty: r.difficulty || 'Medium',
+        savedAt: Date.now(),
+        source: 'demo',
+      });
+    }
+  }
+
+  // 2. Add suggested recipes (gallery-style) — skip duplicates
+  for (const r of suggestedRecipes) {
+    const key = r.name.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    recipes.push(normalizeGalleryRecipe(r));
+  }
+
+  _browseRecipesCache = recipes;
+  return recipes;
+};
+
+export const BROWSE_TAGS = ['All', 'Quick', 'Chicken', 'Beef', 'Seafood', 'Pasta', 'Vegetarian', 'Healthy', 'Comfort', 'Asian'] as const;
 
 // ── Planner Helpers ──────────────────────────────────────────────
 export const defaultPlannerWeek: PlannerWeek = {
