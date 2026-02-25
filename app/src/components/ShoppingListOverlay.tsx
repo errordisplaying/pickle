@@ -1,6 +1,7 @@
 import { X, ShoppingCart, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ShoppingItem, IngredientCategory } from '@/types';
+import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
 
 interface ShoppingListOverlayProps {
   shoppingList: ShoppingItem[];
@@ -21,18 +22,26 @@ export default function ShoppingListOverlay({
   onOpenPlanner,
   onClose,
 }: ShoppingListOverlayProps) {
+  useBodyScrollLock();
   return (
     <div className="fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[203] flex flex-col overflow-y-auto animate-overlay-in">
       {/* Header */}
-      <div className="flex items-center justify-between px-8 py-5 border-b border-black/5">
-        <div className="flex items-center gap-3">
-          <ShoppingCart className="w-6 h-6 text-[#C49A5C]" />
-          <h2 className="text-2xl font-black uppercase text-[#1A1A1A]">Shopping List</h2>
-          <span className="text-sm text-[#6E6A60]">
-            ({shoppingList.filter(i => !i.purchased).length} remaining)
-          </span>
+      <div className="px-4 sm:px-8 py-5 border-b border-black/5">
+        {/* Top row: title + close */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <ShoppingCart className="w-6 h-6 text-[#C49A5C]" />
+            <h2 className="text-xl sm:text-2xl font-black uppercase text-[#1A1A1A]">Shopping List</h2>
+            <span className="text-sm text-[#6E6A60] hidden sm:inline">
+              ({shoppingList.filter(i => !i.purchased).length} remaining)
+            </span>
+          </div>
+          <Button onClick={onClose} variant="outline" className="rounded-full h-10 w-10 p-0 flex items-center justify-center flex-shrink-0">
+            <X className="w-5 h-5" />
+          </Button>
         </div>
-        <div className="flex items-center gap-2">
+        {/* Action buttons row */}
+        <div className="flex items-center gap-2 mt-3 flex-wrap">
           <Button onClick={onGenerateFromPlan} className="bg-[#C49A5C] text-white hover:bg-[#8B6F3C] rounded-full text-xs" size="sm">
             Generate from Plan
           </Button>
@@ -46,14 +55,14 @@ export default function ShoppingListOverlay({
               Clear All
             </Button>
           )}
-          <Button onClick={onClose} variant="outline" className="rounded-full h-10 w-10 p-0 flex items-center justify-center">
-            <X className="w-5 h-5" />
-          </Button>
+          <span className="text-xs text-[#6E6A60] sm:hidden ml-auto">
+            {shoppingList.filter(i => !i.purchased).length} remaining
+          </span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-8 py-6">
+      <div className="flex-1 px-4 sm:px-8 py-6">
         <div className="max-w-3xl mx-auto">
           {shoppingList.length === 0 ? (
             <div className="text-center py-20 max-w-md mx-auto">

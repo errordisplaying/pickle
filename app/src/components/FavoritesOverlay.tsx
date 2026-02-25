@@ -2,6 +2,7 @@ import { X, Calendar, Clock, Heart, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { SavedRecipe } from '@/types';
 import { toTitleCase } from '@/utils';
+import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
 
 interface FavoritesOverlayProps {
   favorites: SavedRecipe[];
@@ -11,10 +12,11 @@ interface FavoritesOverlayProps {
 }
 
 export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToPlanner, onClose }: FavoritesOverlayProps) {
+  useBodyScrollLock();
   return (
     <div className="fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[201] flex flex-col overflow-y-auto animate-overlay-in">
       {/* Header */}
-      <div className="flex items-center justify-between px-8 py-5 border-b border-black/5">
+      <div className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-black/5">
         <div className="flex items-center gap-3">
           <Heart className="w-6 h-6 text-red-400 fill-red-400" />
           <h2 className="text-2xl font-black uppercase text-[#1A1A1A]">Saved Recipes</h2>
@@ -25,7 +27,7 @@ export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToP
         </Button>
       </div>
 
-      <div className="flex-1 px-8 py-6">
+      <div className="flex-1 px-4 sm:px-8 py-6">
         <div className="max-w-7xl mx-auto">
           {favorites.length === 0 ? (
             <div className="text-center py-20 max-w-md mx-auto">

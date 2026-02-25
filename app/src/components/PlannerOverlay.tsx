@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import {
   Calendar, X, Plus, ExternalLink, Share2, Trash2,
-  BookOpen, Search, UtensilsCrossed, ChevronRight, Clock, Flame
+  BookOpen, Search, UtensilsCrossed, Clock, Flame
 } from 'lucide-react';
+import {
+  DndContext, DragOverlay, PointerSensor, TouchSensor,
+  useSensor, useSensors,
+} from '@dnd-kit/core';
+import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core';
+import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { SavedRecipe, PlannerWeek, NutritionGoals } from '@/types';
@@ -13,6 +19,9 @@ import {
   getNutritionProgressColor, getNutritionProgressPct,
   parseNutritionValue, generateGoogleCalendarUrl
 } from '@/utils';
+import DraggableRecipeCard from '@/components/planner/DraggableRecipeCard';
+import DroppableMealSlot from '@/components/planner/DroppableMealSlot';
+import DragOverlayContent from '@/components/planner/DragOverlayContent';
 
 interface PlannerOverlayProps {
   plannerMeals: PlannerWeek;
@@ -55,9 +64,33 @@ export default function PlannerOverlay({
   onOpenExportModal,
   onClose,
 }: PlannerOverlayProps) {
+  useBodyScrollLock();
   const [plannerSidebarTab, setPlannerSidebarTab] = useState<'saved' | 'recent' | 'browse'>('saved');
   const [plannerSearchQuery, setPlannerSearchQuery] = useState('');
   const [plannerSidebarOpen, setPlannerSidebarOpen] = useState(false);
+  const [activeRecipe, setActiveRecipe] = useState<SavedRecipe | null>(null);
+
+  const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 8 } });
+  const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } });
+  const sensors = useSensors(pointerSensor, touchSensor);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const recipe = event.active.data.current?.recipe as SavedRecipe | undefined;
+    if (recipe) setActiveRecipe(recipe);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveRecipe(null);
+    const recipe = event.active.data.current?.recipe as SavedRecipe | undefined;
+    const dropData = event.over?.data.current as { day: string; slot: 'breakfast' | 'lunch' | 'dinner' } | undefined;
+    if (recipe && dropData) {
+      onAddRecipeToPlanner(recipe, dropData.day, dropData.slot);
+    }
+  };
+
+  const handleDragCancel = () => {
+    setActiveRecipe(null);
+  };
 
   const getFilteredSidebarRecipes = (): SavedRecipe[] => {
     const q = plannerSearchQuery.toLowerCase().trim();
@@ -76,6 +109,12 @@ export default function PlannerOverlay({
   };
 
   return (
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
     <div className="fixed inset-0 bg-[#F7F3EB]/98 backdrop-blur-sm z-[200] flex flex-col overflow-hidden animate-overlay-in">
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-6 lg:px-8 py-5 border-b border-[#E8E6DC] flex-shrink-0 bg-white/60 backdrop-blur-md">
@@ -109,6 +148,14 @@ export default function PlannerOverlay({
 
       {/* ── Two-Panel Body ── */}
       <div className="flex-1 flex overflow-hidden">
+        {/* Mobile sidebar backdrop scrim */}
+        {plannerSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/30 z-[9] lg:hidden transition-opacity duration-300"
+            onClick={() => setPlannerSidebarOpen(false)}
+          />
+        )}
+
         {/* LEFT SIDEBAR — Recipe Library */}
         <div className={`${
           plannerSidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -171,31 +218,13 @@ export default function PlannerOverlay({
                 );
               }
               return sidebarRecipes.map((recipe, idx) => (
-                <button
+                <DraggableRecipeCard
                   key={recipe.id || idx}
-                  onClick={() => setRecipeToAssign(recipe)}
-                  className={`w-full flex items-center gap-3 p-2.5 rounded-2xl text-left transition-all duration-150 ${
-                    recipeToAssign?.name === recipe.name
-                      ? 'bg-[#C49A5C]/10 ring-1 ring-[#C49A5C]/30 shadow-sm'
-                      : 'hover:bg-[#F4F2EA]'
-                  }`}
-                >
-                  {recipe.image ? (
-                    <img src={recipe.image} alt="" className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
-                  ) : (
-                    <div className="w-11 h-11 rounded-xl bg-[#F4F2EA] flex items-center justify-center flex-shrink-0">
-                      <UtensilsCrossed className="w-5 h-5 text-[#C49A5C]/40" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#1A1A1A] truncate">{toTitleCase(recipe.name)}</p>
-                    <div className="flex items-center gap-2 text-[10px] text-[#6E6A60] mt-0.5">
-                      {recipe.nutrition.calories > 0 && <span>{recipe.nutrition.calories} cal</span>}
-                      {recipe.totalTime !== 'N/A' && <span>· {recipe.totalTime}</span>}
-                    </div>
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-[#6E6A60]/30 flex-shrink-0" />
-                </button>
+                  recipe={recipe}
+                  index={idx}
+                  isSelected={recipeToAssign?.name === recipe.name}
+                  onSelect={setRecipeToAssign}
+                />
               ));
             })()}
           </div>
@@ -289,7 +318,7 @@ export default function PlannerOverlay({
                 const recipe = plannerMeals[plannerActiveDay]?.[mealType] as SavedRecipe | null;
                 const meta = MEAL_META[mealType];
                 return (
-                  <div key={mealType}>
+                  <DroppableMealSlot key={mealType} day={plannerActiveDay} slot={mealType}>
                     {recipe ? (
                       /* ── Filled Meal Card ── */
                       <div className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-[#E8E6DC] hover:shadow-md transition-shadow planner-card-enter">
@@ -386,7 +415,7 @@ export default function PlannerOverlay({
                         </div>
                       </div>
                     )}
-                  </div>
+                  </DroppableMealSlot>
                 );
               })}
             </div>
@@ -404,7 +433,7 @@ export default function PlannerOverlay({
                     <Flame className="w-4 h-4 text-[#C49A5C]" />
                     <h4 className="font-bold text-sm text-[#1A1A1A] lowercase">{plannerActiveDay}'s nutrition</h4>
                   </div>
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {([
                       { label: 'calories', value: dayNutrition.calories, unit: '', current: dayNutrition.calories, goal: nutritionGoals.calories, color: 'text-[#C49A5C]' },
                       { label: 'protein', value: dayNutrition.protein, unit: '', current: parseNutritionValue(dayNutrition.protein), goal: nutritionGoals.protein, color: 'text-[#8B6F3C]' },
@@ -435,7 +464,7 @@ export default function PlannerOverlay({
               <h3 className="font-bold text-sm text-[#1A1A1A] lowercase mb-5">week at a glance</h3>
 
               {/* Mini day cards */}
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
                 {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => {
                   const dayMeals = plannerMeals[day];
                   const dayCals = getDayNutrition(plannerMeals, day).calories;
@@ -495,7 +524,7 @@ export default function PlannerOverlay({
                       <h4 className="font-bold text-sm text-[#1A1A1A] lowercase">weekly summary</h4>
                       <span className="text-[10px] text-[#6E6A60] ml-auto">{daysWithMeals} day{daysWithMeals !== 1 ? 's' : ''} planned</span>
                     </div>
-                    <div className="grid grid-cols-4 gap-3 mb-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                       {([
                         { label: 'total cal', value: weeklyNutrition.calories.toLocaleString(), accent: true },
                         { label: 'protein', value: weeklyNutrition.protein, accent: false },
@@ -525,5 +554,10 @@ export default function PlannerOverlay({
         </div>
       </div>
     </div>
+
+    <DragOverlay dropAnimation={{ duration: 200, easing: 'ease-out' }}>
+      {activeRecipe ? <DragOverlayContent recipe={activeRecipe} /> : null}
+    </DragOverlay>
+    </DndContext>
   );
 }
