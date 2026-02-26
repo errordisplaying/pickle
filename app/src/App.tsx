@@ -145,9 +145,10 @@ function App() {
 
       const matchedTrigger = triggers.find(t => t.trigger === ref.current);
       if (matchedTrigger) {
-        // Pinned section: scroll to 35% through the pin so content is fully visible
+        // Pinned section: scroll to 45% through the pin so entrance animations
+        // are fully complete and content is settled before exit begins at ~0.7
         const pinRange = matchedTrigger.end - matchedTrigger.start;
-        positions.push({ name: sectionNames[i], top: matchedTrigger.start + pinRange * 0.35 });
+        positions.push({ name: sectionNames[i], top: matchedTrigger.start + pinRange * 0.45 });
       } else {
         // Flowing section: use the GSAP pin spacer parent or the element's own
         // document offset. The pin spacer (if present) is the wrapper GSAP inserts;
@@ -739,12 +740,25 @@ function App() {
         }),
       });
 
-      if (response.ok) {
+      // Handle HTTP error status codes with specific toasts
+      if (!response.ok) {
+        if (response.status === 429) {
+          showToast('Too many searches — wait a moment and try again.', 'warning');
+        } else {
+          showToast('Recipe search is having trouble. Showing suggestions.', 'error');
+        }
+        // Fall through to demo fallback below
+      } else {
         const data = await response.json();
+
         if (data.recipes && data.recipes.length > 0) {
           setRecipeData({ recipes: data.recipes, source: data.source });
+          // Show info toast when server fell back to demo recipes
+          if (data.source === 'demo') {
+            showToast('No live recipes found — showing curated picks.', 'info');
+          }
           // Track recently scraped recipes for planner suggestions
-          const normalized = data.recipes.map((r: any) => normalizeScrapedRecipe(r, 'scraped'));
+          const normalized = data.recipes.map((r: any) => normalizeScrapedRecipe(r, data.source === 'scraped' ? 'scraped' : 'demo'));
           setRecentRecipes(prev => {
             const combined = [...normalized, ...prev];
             const seen = new Set<string>();
@@ -758,9 +772,13 @@ function App() {
           setLoading(false);
           return;
         }
+
+        // Server returned OK but 0 recipes
+        showToast('No recipes matched your ingredients. Try different terms.', 'info');
       }
     } catch (error) {
       console.warn('API unavailable, falling back to demo recipes:', error);
+      showToast("Can't reach recipe server. Showing offline suggestions.", 'error');
     }
 
     // Fallback to demo recipes if API fails or returns nothing
@@ -953,6 +971,7 @@ function App() {
             setPlannerOpen(true);
           }}
           onShareRecipe={shareRecipe}
+          showToast={showToast}
           onClose={() => setSelectedGalleryRecipe(null)}
         />,
         document.body

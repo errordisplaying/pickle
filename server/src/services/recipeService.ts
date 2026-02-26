@@ -4,7 +4,7 @@ import { scrapeBBCGoodFood } from '../scrapers/bbcgoodfood.js';
 import { scrapeEpicurious } from '../scrapers/epicurious.js';
 import { scrapeBudgetBytes } from '../scrapers/budgetbytes.js';
 import { parseTotalMinutes, getScraperHealth } from '../scrapers/baseScraper.js';
-import type { Recipe, SearchParams, RecipeResponse, ScraperResult } from '../types/recipe.js';
+import type { Recipe, SearchParams, RecipeResponse, ScraperResult, ScraperMeta } from '../types/recipe.js';
 
 // ── In-Memory Cache ──────────────────────────────────────────────
 interface CacheEntry {
@@ -356,7 +356,7 @@ export async function findRecipes(params: SearchParams): Promise<RecipeResponse>
   const cached = getCached(cacheKey);
   if (cached) {
     console.log('[Cache] Hit for:', cacheKey);
-    return cached;
+    return { ...cached, meta: { ...cached.meta!, fromCache: true } };
   }
 
   // In-flight deduplication: if same query is already running, piggyback on it
@@ -375,6 +375,13 @@ export async function findRecipes(params: SearchParams): Promise<RecipeResponse>
   } finally {
     inFlightRequests.delete(cacheKey);
   }
+}
+
+/** Build ScraperMeta from a completed run log */
+function buildMeta(runLog: ScraperRunLog): ScraperMeta {
+  const scrapersUsed = runLog.results.filter(r => r.success && r.recipes > 0).map(r => r.site);
+  const scrapersDown = runLog.results.filter(r => !r.success).map(r => r.site);
+  return { scrapersUsed, scrapersDown, totalScraped: runLog.totalRecipes, fromCache: false };
 }
 
 async function findRecipesInternal(params: SearchParams, cacheKey: string): Promise<RecipeResponse> {
@@ -534,7 +541,7 @@ async function findRecipesInternal(params: SearchParams, cacheKey: string): Prom
       recentRuns.unshift(runLog);
       if (recentRuns.length > MAX_RUN_LOG) recentRuns.pop();
 
-      const response: RecipeResponse = { recipes: topRecipes, source: 'scraped' };
+      const response: RecipeResponse = { recipes: topRecipes, source: 'scraped', meta: buildMeta(runLog) };
       setCache(cacheKey, response);
       return response;
     }
@@ -550,7 +557,7 @@ async function findRecipesInternal(params: SearchParams, cacheKey: string): Prom
   if (recentRuns.length > MAX_RUN_LOG) recentRuns.pop();
 
   const fallback = getDemoFallback(params.ingredients);
-  const response: RecipeResponse = { recipes: fallback, source: 'demo' };
+  const response: RecipeResponse = { recipes: fallback, source: 'demo', meta: buildMeta(runLog) };
   setCache(cacheKey, response);
   return response;
 }

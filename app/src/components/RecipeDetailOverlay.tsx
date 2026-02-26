@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { X, Heart, Calendar, Share2, Clock, Flame, ChefHat, Lightbulb, Printer, ExternalLink, Check } from 'lucide-react';
 import { toTitleCase } from '@/utils';
-import type { SavedRecipe } from '@/types';
+import type { SavedRecipe, Toast } from '@/types';
+import ShareCardModal from './ShareCardModal';
 
 interface RecipeDetailOverlayProps {
   recipe: SavedRecipe;
@@ -9,6 +10,7 @@ interface RecipeDetailOverlayProps {
   onToggleFavorite: (recipe: SavedRecipe) => void;
   onAddToPlanner: (recipe: SavedRecipe) => void;
   onShareRecipe: (recipe: SavedRecipe) => void;
+  showToast?: (message: string, type: Toast['type']) => void;
   onClose: () => void;
 }
 
@@ -18,9 +20,11 @@ export default function RecipeDetailOverlay({
   onToggleFavorite,
   onAddToPlanner,
   onShareRecipe,
+  showToast,
   onClose,
 }: RecipeDetailOverlayProps) {
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
+  const [shareOpen, setShareOpen] = useState(false);
 
   const toggleStep = (idx: number) => {
     setCheckedSteps(prev => {
@@ -290,7 +294,7 @@ export default function RecipeDetailOverlay({
           </button>
 
           <button
-            onClick={() => onShareRecipe(recipe)}
+            onClick={() => showToast ? setShareOpen(true) : onShareRecipe(recipe)}
             className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#6E6A60] border border-[#E8E6DC] rounded-full text-sm font-semibold hover:border-[#C49A5C]/40 transition-colors btn-press"
           >
             <Share2 className="w-4 h-4" />
@@ -313,6 +317,15 @@ export default function RecipeDetailOverlay({
           </button>
         </div>
       </div>
+
+      {/* Share Card Modal */}
+      {shareOpen && showToast && (
+        <ShareCardModal
+          recipe={recipe}
+          onClose={() => setShareOpen(false)}
+          showToast={showToast}
+        />
+      )}
     </div>
   );
 }

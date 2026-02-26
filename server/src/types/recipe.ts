@@ -26,9 +26,17 @@ export interface SearchParams {
   strictness?: string;
 }
 
+export interface ScraperMeta {
+  scrapersUsed: string[];
+  scrapersDown: string[];
+  totalScraped: number;
+  fromCache: boolean;
+}
+
 export interface RecipeResponse {
   recipes: Recipe[];
   source: 'scraped' | 'demo' | 'mixed';
+  meta?: ScraperMeta;
 }
 
 export interface ScraperResult {

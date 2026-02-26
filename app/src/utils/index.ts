@@ -384,3 +384,169 @@ export const extractIngredientsFromPlanner = (plannerMeals: PlannerWeek): Shoppi
     catOrder.indexOf(a.category) - catOrder.indexOf(b.category)
   );
 };
+
+// ── Recipe Share Card (Canvas) ─────────────────────────────────────
+// Generates a branded 1200×630 PNG image for social sharing
+
+/** Wrap text to fit within a max width, returning lines */
+function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let current = '';
+  for (const word of words) {
+    const test = current ? `${current} ${word}` : word;
+    if (ctx.measureText(test).width > maxWidth && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = test;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+/** Load an image from a URL, resolving with the loaded Image element */
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Image load failed'));
+    img.src = src;
+  });
+}
+
+export async function generateRecipeCard(recipe: {
+  name: string;
+  image?: string;
+  prepTime?: string;
+  cookTime?: string;
+  nutrition?: { calories: number; protein: string; carbs: string; fat: string };
+  ingredients?: string[];
+}): Promise<Blob> {
+  const W = 1200;
+  const H = 630;
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d')!;
+
+  // ── Background
+  ctx.fillStyle = '#F7F3EB';
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Left image area (40%)
+  const imgW = Math.round(W * 0.4);
+  let hasImage = false;
+
+  if (recipe.image) {
+    try {
+      const img = await loadImage(recipe.image);
+      // Cover-crop the image into the left area
+      const scale = Math.max(imgW / img.width, H / img.height);
+      const sw = imgW / scale;
+      const sh = H / scale;
+      const sx = (img.width - sw) / 2;
+      const sy = (img.height - sh) / 2;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, imgW, H);
+      hasImage = true;
+    } catch {
+      // Fall through to placeholder
+    }
+  }
+
+  if (!hasImage) {
+    ctx.fillStyle = '#E8E6DC';
+    ctx.fillRect(0, 0, imgW, H);
+    // Utensil placeholder icon
+    ctx.font = '80px serif';
+    ctx.fillStyle = '#C49A5C';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🍽', imgW / 2, H / 2);
+  }
+
+  // ── Right content area (60%)
+  const contentX = imgW + 48;
+  const contentW = W - imgW - 96;
+  let y = 60;
+
+  // Recipe name
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#1A1A1A';
+  ctx.font = 'bold 40px Georgia, "Times New Roman", serif';
+  const nameLines = wrapText(ctx, toTitleCase(recipe.name), contentW);
+  for (const line of nameLines.slice(0, 3)) {
+    ctx.fillText(line, contentX, y);
+    y += 52;
+  }
+
+  // Divider
+  y += 12;
+  ctx.strokeStyle = '#C49A5C';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(contentX, y);
+  ctx.lineTo(contentX + contentW, y);
+  ctx.stroke();
+  y += 24;
+
+  // Time + calories row
+  ctx.font = '22px -apple-system, "Segoe UI", sans-serif';
+  ctx.fillStyle = '#6E6A60';
+  const infoParts: string[] = [];
+  if (recipe.prepTime && recipe.prepTime !== 'N/A') infoParts.push(`⏱ Prep: ${recipe.prepTime}`);
+  if (recipe.cookTime && recipe.cookTime !== 'N/A') infoParts.push(`🔥 Cook: ${recipe.cookTime}`);
+  if (recipe.nutrition && recipe.nutrition.calories > 0) infoParts.push(`${recipe.nutrition.calories} cal`);
+  if (infoParts.length > 0) {
+    ctx.fillText(infoParts.join('   •   '), contentX, y);
+    y += 36;
+  }
+
+  // Macros row
+  if (recipe.nutrition && recipe.nutrition.calories > 0) {
+    ctx.font = '20px -apple-system, "Segoe UI", sans-serif';
+    ctx.fillStyle = '#8B8579';
+    const macros = `P: ${recipe.nutrition.protein}  •  C: ${recipe.nutrition.carbs}  •  F: ${recipe.nutrition.fat}`;
+    ctx.fillText(macros, contentX, y);
+    y += 36;
+  }
+
+  // Ingredients (up to 5)
+  if (recipe.ingredients && recipe.ingredients.length > 0) {
+    y += 8;
+    ctx.font = '20px -apple-system, "Segoe UI", sans-serif';
+    ctx.fillStyle = '#6E6A60';
+    const display = recipe.ingredients.slice(0, 5);
+    for (const ing of display) {
+      const trimmed = ing.length > 45 ? ing.slice(0, 42) + '...' : ing;
+      ctx.fillText(`•  ${trimmed}`, contentX, y);
+      y += 30;
+    }
+    if (recipe.ingredients.length > 5) {
+      ctx.fillStyle = '#8B8579';
+      ctx.fillText(`  + ${recipe.ingredients.length - 5} more`, contentX, y);
+    }
+  }
+
+  // ── Bottom bar
+  const barH = 48;
+  ctx.fillStyle = '#C49A5C';
+  ctx.fillRect(0, H - barH, W, barH);
+
+  ctx.font = 'bold 18px -apple-system, "Segoe UI", sans-serif';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('chickpea.kitchen', W / 2, H - barH / 2);
+
+  // ── Export as blob
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob failed'))),
+      'image/png'
+    );
+  });
+}
