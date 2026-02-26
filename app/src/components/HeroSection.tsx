@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Search, Beaker, Clock, X, Plus,
   Heart, ArrowRight, Send,
-  Flame, UtensilsCrossed, BadgeCheck,
+  Flame, UtensilsCrossed,
   Share2, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 import type { SavedRecipe, DietaryFilter, ChatMessage } from '@/types';
 import { DIETARY_FILTERS, SERVING_MULTIPLIERS } from '@/constants';
+import HeroWalkthrough from './HeroWalkthrough';
 import { normalizeScrapedRecipe, toTitleCase, scaleNutrition } from '@/utils';
 import { trackEvent, EVENTS } from '@/utils/analytics';
 
@@ -44,8 +45,6 @@ interface HeroSectionProps {
   onAddToPlanner: (recipe: SavedRecipe) => void;
 }
 
-const headlines = ['cook with what you have.', 'waste less, eat better.', 'your kitchen, simplified.'];
-
 export default function HeroSection({
   heroRef,
   mode,
@@ -73,16 +72,6 @@ export default function HeroSection({
   onShareRecipe,
   onAddToPlanner,
 }: HeroSectionProps) {
-  // ── Local State: Animated headline ─────────────────────────────
-  const [headlineIndex, setHeadlineIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHeadlineIndex((prev) => (prev + 1) % 3);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
   // ── Local State: Test Kitchen ──────────────────────────────────
   const [tkDishName, setTkDishName] = useState('');
   const [tkIngredients, setTkIngredients] = useState<string[]>([]);
@@ -182,30 +171,9 @@ export default function HeroSection({
         {/* Gradient overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-[28px]" />
 
-        {/* Headline on image */}
+        {/* Animated walkthrough on image */}
         <div className="hero-headline absolute bottom-8 left-8 right-8 z-20">
-          <h1 className="text-[clamp(2.5rem,5vw,4.5rem)] font-black lowercase text-white leading-none relative h-[1.1em] overflow-hidden drop-shadow-lg">
-            {headlines.map((text, i) => (
-              <span
-                key={text}
-                className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-                  i === headlineIndex
-                    ? 'opacity-100 translate-y-0'
-                    : i === (headlineIndex + 2) % 3
-                    ? 'opacity-0 -translate-y-full'
-                    : 'opacity-0 translate-y-full'
-                }`}
-              >
-                {text}
-              </span>
-            ))}
-          </h1>
-          <div className="flex items-center gap-3 mt-4">
-            <Badge className="bg-white/20 backdrop-blur-sm text-white border border-white/20 rounded-full px-4 py-1.5">
-              <BadgeCheck className="w-4 h-4 mr-1" /> 100% Free
-            </Badge>
-            <span className="text-white/80 text-sm">No subscription. No credit card required.</span>
-          </div>
+          <HeroWalkthrough />
         </div>
       </div>
 
