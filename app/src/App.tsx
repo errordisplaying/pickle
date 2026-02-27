@@ -15,6 +15,7 @@ import {
   defaultPlannerWeek, migratePlannerData,
   getWeeklyNutrition,
   toTitleCase, formatRecipeShareText, extractIngredientsFromPlanner,
+  getAllBrowseRecipes,
 } from '@/utils';
 import { buildTasteProfile, getPersonalizedRecipes } from '@/utils/recommendations';
 import { initAnalytics, trackEvent, setAnalyticsUserId, EVENTS } from '@/utils/analytics';
@@ -34,6 +35,7 @@ import NutritionSection from '@/components/NutritionSection';
 import CommunitySection from '@/components/CommunitySection';
 import CtaSection from '@/components/CtaSection';
 import NutritionGoalsModal from '@/components/NutritionGoalsModal';
+import AiMealPlanModal from '@/components/AiMealPlanModal';
 import ShoppingListOverlay from '@/components/ShoppingListOverlay';
 import AuthModal from '@/components/AuthModal';
 import RecipeDetailOverlay from '@/components/RecipeDetailOverlay';
@@ -48,6 +50,7 @@ function App() {
   const [timeAvailable, setTimeAvailable] = useState('');
   const [cuisine, setCuisine] = useState('');
   const [strictness, setStrictness] = useState('flexible');
+  const [smartSearchEnabled, setSmartSearchEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [recipeData, setRecipeData] = useState<any>(null);
   const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
@@ -63,6 +66,7 @@ function App() {
   const [plannerActiveDay, setPlannerActiveDay] = useState('Mon');
   const [recipeToAssign, setRecipeToAssign] = useState<SavedRecipe | null>(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [aiPlanModalOpen, setAiPlanModalOpen] = useState(false);
 
   // Favorites state (persisted to localStorage)
   const [favorites, setFavorites] = useState<SavedRecipe[]>(() =>
@@ -605,6 +609,43 @@ function App() {
     showToast('Week cleared', 'info');
   };
 
+  const applyAiMealPlan = (plan: Record<string, { breakfast: string | null; lunch: string | null; dinner: string | null }>) => {
+    // Build lookup map of all available recipes by lowercase name
+    const allRecipes = [...favorites, ...recentRecipes, ...getAllBrowseRecipes()];
+    const recipeLookup = new Map<string, SavedRecipe>();
+    allRecipes.forEach(r => {
+      recipeLookup.set(r.name.toLowerCase(), r);
+    });
+
+    // Map AI plan (recipe names) → SavedRecipe objects
+    const newPlannerMeals: PlannerWeek = { ...defaultPlannerWeek };
+    let filled = 0;
+    let total = 0;
+    for (const day of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']) {
+      const dayPlan = plan[day];
+      if (!dayPlan) continue;
+      const slots = ['breakfast', 'lunch', 'dinner'] as const;
+      for (const slot of slots) {
+        const name = dayPlan[slot];
+        if (name) {
+          total++;
+          const match = recipeLookup.get(name.toLowerCase());
+          if (match) {
+            newPlannerMeals[day] = { ...newPlannerMeals[day], [slot]: match };
+            filled++;
+          }
+        }
+      }
+    }
+
+    setPlannerMeals(newPlannerMeals);
+    setAiPlanModalOpen(false);
+
+    if (filled < total) {
+      showToast(`Plan applied (${filled} of ${total} slots filled)`, 'info');
+    }
+  };
+
   // ── Toast Notifications ─────────────────────────────────────────
   const showToast = (message: string, type: Toast['type'] = 'success') => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -728,15 +769,53 @@ function App() {
     setLoading(true);
     setRecipeData(null);
 
+    const apiUrl = import.meta.env.VITE_API_URL || '';
+
+    // AI Enhancement step — parse & expand query if Smart Search is on
+    let searchIngredients = ingredients.trim();
+    let relatedTerms: string[] = [];
+    let enrichedTime = timeAvailable.trim() || undefined;
+    let enrichedCuisine = [cuisine.trim(), ...activeDietaryFilters.map(f => f.toLowerCase())].filter(Boolean).join(' ') || undefined;
+    let enrichedStrictness = strictness;
+
+    if (smartSearchEnabled) {
+      try {
+        const aiRes = await Promise.race([
+          fetch(`${apiUrl}/api/ai/enhance-search`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: ingredients.trim() }),
+          }),
+          new Promise<Response>((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
+        ]);
+        if (aiRes.ok) {
+          const aiData = await aiRes.json();
+          if (aiData.enhanced) {
+            searchIngredients = aiData.ingredients || searchIngredients;
+            relatedTerms = aiData.relatedTerms || [];
+            if (aiData.timeAvailable && !enrichedTime) enrichedTime = aiData.timeAvailable;
+            if (aiData.cuisine && !enrichedCuisine) enrichedCuisine = aiData.cuisine;
+            if (aiData.dietary?.length && activeDietaryFilters.length === 0) {
+              enrichedCuisine = [enrichedCuisine, ...aiData.dietary].filter(Boolean).join(' ') || undefined;
+            }
+            if (aiData.strictness && strictness === 'flexible') enrichedStrictness = aiData.strictness;
+          }
+        }
+      } catch {
+        // Silently fall back to raw query — no error toast needed
+      }
+    }
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/recipes`, {
+      const response = await fetch(`${apiUrl}/api/recipes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ingredients: ingredients.trim(),
-          timeAvailable: timeAvailable.trim() || undefined,
-          cuisine: [cuisine.trim(), ...activeDietaryFilters.map(f => f.toLowerCase())].filter(Boolean).join(' ') || undefined,
-          strictness,
+          ingredients: searchIngredients,
+          timeAvailable: enrichedTime,
+          cuisine: enrichedCuisine,
+          strictness: enrichedStrictness,
+          relatedTerms: relatedTerms.length > 0 ? relatedTerms : undefined,
         }),
       });
 
@@ -863,6 +942,8 @@ function App() {
         isFavorite={isFavorite}
         onShareRecipe={shareRecipe}
         onAddToPlanner={(recipe) => { setRecipeToAssign(recipe); setExpandedRecipe(null); setRecipeData(null); setPlannerOpen(true); }}
+        smartSearchEnabled={smartSearchEnabled}
+        onToggleSmartSearch={() => setSmartSearchEnabled(prev => !prev)}
       />
 
       {/* Sponsored Section */}
@@ -934,7 +1015,20 @@ function App() {
           onClearPlannerWeek={clearPlannerWeek}
           onShareMealPlan={shareMealPlan}
           onOpenExportModal={() => { trackEvent(EVENTS.CALENDAR_EXPORTED); setExportModalOpen(true); }}
+          onOpenAiPlanModal={() => setAiPlanModalOpen(true)}
           onClose={() => { setPlannerOpen(false); setRecipeToAssign(null); }}
+        />,
+        document.body
+      )}
+
+      {/* AI Meal Plan Modal */}
+      {aiPlanModalOpen && createPortal(
+        <AiMealPlanModal
+          nutritionGoals={nutritionGoals}
+          availableRecipes={[...favorites, ...recentRecipes, ...getAllBrowseRecipes()]}
+          onApplyPlan={applyAiMealPlan}
+          onClose={() => setAiPlanModalOpen(false)}
+          showToast={showToast}
         />,
         document.body
       )}

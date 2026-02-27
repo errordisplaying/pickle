@@ -16,7 +16,8 @@ const cache = new Map<string, CacheEntry>();
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 
 function getCacheKey(params: SearchParams): string {
-  return `${params.ingredients.toLowerCase().trim()}|${params.timeAvailable || ''}|${params.cuisine || ''}|${params.strictness || 'flexible'}`;
+  const related = params.relatedTerms ? params.relatedTerms.sort().join(',') : '';
+  return `${params.ingredients.toLowerCase().trim()}|${params.timeAvailable || ''}|${params.cuisine || ''}|${params.strictness || 'flexible'}|${related}`;
 }
 
 function getCached(key: string): RecipeResponse | null {
@@ -253,6 +254,18 @@ function scoreRecipe(recipe: Recipe, params: SearchParams): number {
       score += 15;
     } else if (recipeText.includes(ingredient)) {
       score += 8;
+    }
+  }
+
+  // AI-expanded related terms (semantic matching)
+  if (params.relatedTerms && params.relatedTerms.length > 0) {
+    for (const term of params.relatedTerms) {
+      const termLower = term.toLowerCase();
+      if (recipeIngredients.includes(termLower)) {
+        score += 5;
+      } else if (recipeText.includes(termLower)) {
+        score += 3;
+      }
     }
   }
 

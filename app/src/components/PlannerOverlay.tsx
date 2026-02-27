@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Calendar, X, Plus, ExternalLink, Share2, Trash2,
-  BookOpen, Search, UtensilsCrossed, Clock, Flame
+  BookOpen, Search, UtensilsCrossed, Clock, Flame, Sparkles
 } from 'lucide-react';
 import {
   DndContext, DragOverlay, PointerSensor, TouchSensor,
@@ -38,6 +38,7 @@ interface PlannerOverlayProps {
   onClearPlannerWeek: () => void;
   onShareMealPlan: () => void;
   onOpenExportModal: () => void;
+  onOpenAiPlanModal: () => void;
   onClose: () => void;
 }
 
@@ -62,6 +63,7 @@ export default function PlannerOverlay({
   onClearPlannerWeek,
   onShareMealPlan,
   onOpenExportModal,
+  onOpenAiPlanModal,
   onClose,
 }: PlannerOverlayProps) {
   useBodyScrollLock();
@@ -132,6 +134,9 @@ export default function PlannerOverlay({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button onClick={onOpenAiPlanModal} variant="outline" className="rounded-full text-xs gap-1.5 hidden sm:flex border-[#C49A5C]/30 text-[#C49A5C] hover:bg-[#C49A5C]/10 hover:border-[#C49A5C]/50" size="sm">
+            <Sparkles className="w-3.5 h-3.5" /> AI Plan
+          </Button>
           <Button onClick={() => onOpenExportModal()} variant="outline" className="rounded-full text-xs gap-1.5 hidden sm:flex border-[#E8E6DC] hover:bg-[#E8E6DC]" size="sm">
             <ExternalLink className="w-3.5 h-3.5" /> Export
           </Button>

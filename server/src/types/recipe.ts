@@ -24,6 +24,7 @@ export interface SearchParams {
   timeAvailable?: string;
   cuisine?: string;
   strictness?: string;
+  relatedTerms?: string[];
 }
 
 export interface ScraperMeta {

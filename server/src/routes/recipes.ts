@@ -69,13 +69,21 @@ router.post('/recipes', async (req: Request, res: Response) => {
       return;
     }
 
-    const { ingredients, timeAvailable, cuisine, strictness } = req.body as SearchParams;
+    const { ingredients, timeAvailable, cuisine, strictness, relatedTerms } = req.body;
 
     // Sanitize inputs
     const cleanIngredients = sanitize(ingredients, MAX_INGREDIENTS_LEN);
     const cleanCuisine = sanitize(cuisine, MAX_CUISINE_LEN);
     const cleanTime = sanitize(timeAvailable, MAX_TIME_LEN);
     const cleanStrictness = sanitize(strictness, 20);
+
+    // Sanitize relatedTerms (AI-expanded synonyms)
+    const cleanRelatedTerms = Array.isArray(relatedTerms)
+      ? relatedTerms
+          .filter((t: any) => typeof t === 'string')
+          .map((t: string) => t.trim().slice(0, 50))
+          .slice(0, 20)
+      : undefined;
 
     // Validate required fields
     if (!cleanIngredients) {
@@ -89,6 +97,7 @@ router.post('/recipes', async (req: Request, res: Response) => {
     console.log(`  Time: ${cleanTime || 'any'}`);
     console.log(`  Cuisine: ${cleanCuisine || 'any'}`);
     console.log(`  Strictness: ${cleanStrictness || 'flexible'}`);
+    if (cleanRelatedTerms?.length) console.log(`  Related terms: ${cleanRelatedTerms.join(', ')}`);
     console.log(`${'─'.repeat(50)}`);
 
     const result = await findRecipes({
@@ -96,6 +105,7 @@ router.post('/recipes', async (req: Request, res: Response) => {
       timeAvailable: cleanTime,
       cuisine: cleanCuisine,
       strictness: cleanStrictness,
+      relatedTerms: cleanRelatedTerms,
     });
 
     console.log(`[API] Returning ${result.recipes.length} recipes (source: ${result.source})`);

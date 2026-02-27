@@ -3,7 +3,7 @@ import {
   Search, Beaker, Clock, X, Plus,
   Heart, ArrowRight, Send,
   Flame, UtensilsCrossed,
-  Share2, Calendar
+  Share2, Calendar, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +43,8 @@ interface HeroSectionProps {
   isFavorite: (name: string) => boolean;
   onShareRecipe: (recipe: any) => void;
   onAddToPlanner: (recipe: SavedRecipe) => void;
+  smartSearchEnabled: boolean;
+  onToggleSmartSearch: () => void;
 }
 
 export default function HeroSection({
@@ -71,6 +73,8 @@ export default function HeroSection({
   isFavorite,
   onShareRecipe,
   onAddToPlanner,
+  smartSearchEnabled,
+  onToggleSmartSearch,
 }: HeroSectionProps) {
   // ── Local State: Test Kitchen ──────────────────────────────────
   const [tkDishName, setTkDishName] = useState('');
@@ -211,11 +215,15 @@ export default function HeroSection({
               <Textarea
                 value={ingredients}
                 onChange={(e) => setIngredients(e.target.value)}
-                placeholder="e.g., eggs, spinach, rice, lime..."
+                placeholder={smartSearchEnabled
+                  ? "Try: 'quick healthy dinner' or just list ingredients..."
+                  : "e.g., eggs, spinach, rice, lime..."}
                 className="bg-white border-[#E8E6DC] rounded-2xl resize-none min-h-[80px] text-sm"
               />
               <p className="text-xs text-[#6E6A60] mt-1">
-                Tip: Just type naturally — "eggs milk cheese" works
+                {smartSearchEnabled
+                  ? 'AI will understand your intent and find the best matches'
+                  : "Tip: Just type naturally — \"eggs milk cheese\" works"}
               </p>
             </div>
 
@@ -272,6 +280,25 @@ export default function HeroSection({
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Smart Search Toggle */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#C49A5C]" />
+                <span className="text-xs font-medium text-[#6E6A60]">Smart Search</span>
+              </div>
+              <button
+                onClick={onToggleSmartSearch}
+                className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${
+                  smartSearchEnabled ? 'bg-[#C49A5C]' : 'bg-[#E8E6DC]'
+                }`}
+                aria-label="Toggle smart search"
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                  smartSearchEnabled ? 'translate-x-4' : 'translate-x-0'
+                }`} />
+              </button>
             </div>
 
             <Button
