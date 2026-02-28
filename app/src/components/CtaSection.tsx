@@ -1,6 +1,7 @@
 import { Sparkles, ArrowUp, Heart, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import OptimizedImage from '@/components/OptimizedImage';
 
 interface CtaSectionProps {
   ctaRef: React.RefObject<HTMLDivElement | null>;
@@ -13,10 +14,10 @@ export default function CtaSection({ ctaRef, onStartCooking }: CtaSectionProps) 
       <section ref={ctaRef} className="section-flowing bg-warm-gray py-20 px-[6vw] z-[70]">
         <div className="max-w-5xl mx-auto">
           <div className="japandi-card overflow-hidden mb-10">
-            <img
+            <OptimizedImage
               src="/cta_final_table.jpg"
               alt="Shared meal"
-              className="w-full h-[50vh] object-cover image-grade"
+              className="w-full h-[50vh] image-grade"
             />
           </div>
 

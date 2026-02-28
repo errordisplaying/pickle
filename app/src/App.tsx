@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 
@@ -28,21 +28,56 @@ import GallerySection from '@/components/GallerySection';
 import PartnerOffersSection from '@/components/PartnerOffersSection';
 import SmartSwapSection from '@/components/SmartSwapSection';
 import PlannerPreviewSection from '@/components/PlannerPreviewSection';
-import PlannerOverlay from '@/components/PlannerOverlay';
-import ExportCalendarModal from '@/components/ExportCalendarModal';
-import FavoritesOverlay from '@/components/FavoritesOverlay';
 import NutritionSection from '@/components/NutritionSection';
 import CommunitySection from '@/components/CommunitySection';
 import CtaSection from '@/components/CtaSection';
-import NutritionGoalsModal from '@/components/NutritionGoalsModal';
-import AiMealPlanModal from '@/components/AiMealPlanModal';
-import ShoppingListOverlay from '@/components/ShoppingListOverlay';
-import AuthModal from '@/components/AuthModal';
-import RecipeDetailOverlay from '@/components/RecipeDetailOverlay';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Analytics from '@/components/Analytics';
 
+// Lazy-loaded overlays & modals (code-split into separate chunks, loaded on demand)
+const PlannerOverlay = lazy(() => import('@/components/PlannerOverlay'));
+const ExportCalendarModal = lazy(() => import('@/components/ExportCalendarModal'));
+const FavoritesOverlay = lazy(() => import('@/components/FavoritesOverlay'));
+const RecipeDetailOverlay = lazy(() => import('@/components/RecipeDetailOverlay'));
+const NutritionGoalsModal = lazy(() => import('@/components/NutritionGoalsModal'));
+const AiMealPlanModal = lazy(() => import('@/components/AiMealPlanModal'));
+const ShoppingListOverlay = lazy(() => import('@/components/ShoppingListOverlay'));
+const AuthModal = lazy(() => import('@/components/AuthModal'));
+
 gsap.registerPlugin(ScrollTrigger);
+
+/* ── Error fallback components ────────────────────────────────────── */
+
+/** Compact fallback shown when an inline section crashes */
+function SectionErrorFallback() {
+  return (
+    <div className="py-16 px-[6vw] flex items-center justify-center bg-warm-white">
+      <div className="text-center">
+        <AlertTriangle className="w-8 h-8 text-[#C49A5C] mx-auto mb-3" />
+        <p className="text-sm text-[#6E6A60]">This section couldn&rsquo;t load. Scroll past to continue.</p>
+      </div>
+    </div>
+  );
+}
+
+/** Overlay-style fallback with a close button to dismiss the broken overlay */
+function OverlayErrorFallback({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-white rounded-[24px] p-8 max-w-sm text-center shadow-xl">
+        <AlertTriangle className="w-10 h-10 text-[#C49A5C] mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-[#1A1A1A] mb-2">something went wrong</h3>
+        <p className="text-sm text-[#6E6A60] mb-6">This panel couldn&rsquo;t load properly.</p>
+        <button
+          onClick={onClose}
+          className="bg-[#C49A5C] text-white hover:bg-[#8B6F3C] rounded-full px-6 py-2.5 text-sm font-medium transition-colors duration-200"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function App() {
   // Recipe Finder State
@@ -916,6 +951,7 @@ function App() {
       />
 
       {/* Section 1: Hero */}
+      <ErrorBoundary fallback={<SectionErrorFallback />}>
       <HeroSection
         heroRef={heroRef}
         mode={mode}
@@ -945,9 +981,12 @@ function App() {
         smartSearchEnabled={smartSearchEnabled}
         onToggleSmartSearch={() => setSmartSearchEnabled(prev => !prev)}
       />
+      </ErrorBoundary>
 
       {/* Sponsored Section */}
-      <SponsoredSection className="z-15" />
+      <ErrorBoundary fallback={<SectionErrorFallback />}>
+        <SponsoredSection className="z-15" />
+      </ErrorBoundary>
 
       {/* Section 2: Nutrition Goals */}
       <ErrorBoundary>
@@ -973,7 +1012,9 @@ function App() {
       </ErrorBoundary>
 
       {/* Partner Offers */}
-      <PartnerOffersSection />
+      <ErrorBoundary fallback={<SectionErrorFallback />}>
+        <PartnerOffersSection />
+      </ErrorBoundary>
 
       {/* Section 4: Smart Substitutions */}
       <ErrorBoundary>
@@ -1000,6 +1041,8 @@ function App() {
 
       {/* Planner Full-Screen Overlay (portalled to escape GSAP transforms) */}
       {plannerOpen && createPortal(
+        <ErrorBoundary fallback={<OverlayErrorFallback onClose={() => { setPlannerOpen(false); setRecipeToAssign(null); }} />}>
+        <Suspense fallback={null}>
         <PlannerOverlay
           plannerMeals={plannerMeals}
           plannerActiveDay={plannerActiveDay}
@@ -1017,44 +1060,60 @@ function App() {
           onOpenExportModal={() => { trackEvent(EVENTS.CALENDAR_EXPORTED); setExportModalOpen(true); }}
           onOpenAiPlanModal={() => setAiPlanModalOpen(true)}
           onClose={() => { setPlannerOpen(false); setRecipeToAssign(null); }}
-        />,
+        />
+        </Suspense>
+        </ErrorBoundary>,
         document.body
       )}
 
       {/* AI Meal Plan Modal */}
       {aiPlanModalOpen && createPortal(
+        <ErrorBoundary fallback={<OverlayErrorFallback onClose={() => setAiPlanModalOpen(false)} />}>
+        <Suspense fallback={null}>
         <AiMealPlanModal
           nutritionGoals={nutritionGoals}
           availableRecipes={[...favorites, ...recentRecipes, ...getAllBrowseRecipes()]}
           onApplyPlan={applyAiMealPlan}
           onClose={() => setAiPlanModalOpen(false)}
           showToast={showToast}
-        />,
+        />
+        </Suspense>
+        </ErrorBoundary>,
         document.body
       )}
 
       {/* Export Calendar Modal (portalled to escape GSAP transforms) */}
       {exportModalOpen && createPortal(
+        <ErrorBoundary fallback={<OverlayErrorFallback onClose={() => setExportModalOpen(false)} />}>
+        <Suspense fallback={null}>
         <ExportCalendarModal
           plannerMeals={plannerMeals}
           onClose={() => setExportModalOpen(false)}
-        />,
+        />
+        </Suspense>
+        </ErrorBoundary>,
         document.body
       )}
 
       {/* Favorites Overlay (portalled to escape GSAP transforms) */}
       {favoritesOpen && createPortal(
+        <ErrorBoundary fallback={<OverlayErrorFallback onClose={() => setFavoritesOpen(false)} />}>
+        <Suspense fallback={null}>
         <FavoritesOverlay
           favorites={favorites}
           onRemoveFavorite={removeFavorite}
           onAddToPlanner={(recipe) => { setRecipeToAssign(recipe); setFavoritesOpen(false); setPlannerOpen(true); }}
           onClose={() => setFavoritesOpen(false)}
-        />,
+        />
+        </Suspense>
+        </ErrorBoundary>,
         document.body
       )}
 
       {/* Recipe Detail Overlay (portalled to escape GSAP transforms) */}
       {selectedGalleryRecipe && createPortal(
+        <ErrorBoundary fallback={<OverlayErrorFallback onClose={() => setSelectedGalleryRecipe(null)} />}>
+        <Suspense fallback={null}>
         <RecipeDetailOverlay
           recipe={selectedGalleryRecipe}
           isFavorite={isFavorite(selectedGalleryRecipe.name)}
@@ -1067,7 +1126,9 @@ function App() {
           onShareRecipe={shareRecipe}
           showToast={showToast}
           onClose={() => setSelectedGalleryRecipe(null)}
-        />,
+        />
+        </Suspense>
+        </ErrorBoundary>,
         document.body
       )}
 
@@ -1077,10 +1138,12 @@ function App() {
       </ErrorBoundary>
 
       {/* Recommended Essentials */}
-      <SponsoredSection title="Sponsored &middot; Recommended Kitchen Essentials" className="bg-warm-gray z-[65]" />
+      <ErrorBoundary fallback={<SectionErrorFallback />}>
+        <SponsoredSection title="Sponsored &middot; Recommended Kitchen Essentials" className="bg-warm-gray z-[65]" />
+      </ErrorBoundary>
 
       {/* Section 7: CTA + Footer */}
-
+      <ErrorBoundary fallback={<SectionErrorFallback />}>
       <CtaSection
         ctaRef={ctaRef}
         onStartCooking={() => {
@@ -1088,20 +1151,27 @@ function App() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
+      </ErrorBoundary>
 
       {/* Nutrition Goals Modal (portalled to escape GSAP transforms) */}
       {goalsSettingsOpen && createPortal(
+        <ErrorBoundary fallback={<OverlayErrorFallback onClose={() => setGoalsSettingsOpen(false)} />}>
+        <Suspense fallback={null}>
         <NutritionGoalsModal
           nutritionGoals={nutritionGoals}
           onUpdateGoals={(goals) => { trackEvent(EVENTS.NUTRITION_GOALS_UPDATED, { goals }); setNutritionGoals(goals); }}
           onClose={() => setGoalsSettingsOpen(false)}
           showToast={showToast}
-        />,
+        />
+        </Suspense>
+        </ErrorBoundary>,
         document.body
       )}
 
       {/* Shopping List Overlay (portalled to escape GSAP transforms) */}
       {shoppingListOpen && createPortal(
+        <ErrorBoundary fallback={<OverlayErrorFallback onClose={() => setShoppingListOpen(false)} />}>
+        <Suspense fallback={null}>
         <ShoppingListOverlay
           shoppingList={shoppingList}
           onToggleItem={toggleShoppingItem}
@@ -1110,16 +1180,22 @@ function App() {
           onClearAll={clearShoppingList}
           onOpenPlanner={() => { setShoppingListOpen(false); setPlannerOpen(true); }}
           onClose={() => setShoppingListOpen(false)}
-        />,
+        />
+        </Suspense>
+        </ErrorBoundary>,
         document.body
       )}
 
       {/* Auth Modal (portalled to escape GSAP transforms) */}
       {authModalOpen && createPortal(
+        <ErrorBoundary fallback={<OverlayErrorFallback onClose={() => setAuthModalOpen(false)} />}>
+        <Suspense fallback={null}>
         <AuthModal
           onClose={() => { setAuthModalOpen(false); }}
           showToast={showToast}
-        />,
+        />
+        </Suspense>
+        </ErrorBoundary>,
         document.body
       )}
 

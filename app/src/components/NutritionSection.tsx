@@ -3,6 +3,7 @@ import { Flame, Beef, Wheat, Droplets, RotateCcw, Star, Calendar, ArrowRight } f
 import type { NutritionGoals } from '@/types';
 import { nutritionSpecialists } from '@/data';
 import { trackEvent, EVENTS } from '@/utils/analytics';
+import OptimizedImage from '@/components/OptimizedImage';
 
 interface NutritionSectionProps {
   nutritionRef: React.RefObject<HTMLDivElement | null>;
@@ -86,7 +87,7 @@ export default function NutritionSection({ nutritionRef, nutritionGoals, onUpdat
 
       {/* Left Image Card */}
       <div className="nutrition-image absolute left-[6vw] top-[14vh] w-[48vw] h-[72vh] japandi-card overflow-hidden">
-        <img src="/nutrition_salmon_bowl.jpg" alt="Nutritious meal" className="w-full h-full object-cover image-grade" />
+        <OptimizedImage src="/nutrition_salmon_bowl.jpg" alt="Nutritious meal" className="w-full h-full image-grade" />
 
         {/* Floating calorie badge on the image */}
         <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-md rounded-2xl px-5 py-3 shadow-lg border border-white/50">
