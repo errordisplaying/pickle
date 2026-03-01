@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { X, Heart, Calendar, Share2, Clock, Flame, ChefHat, Lightbulb, Printer, ExternalLink, Check } from 'lucide-react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { X, Heart, Calendar, Share2, Clock, Flame, ChefHat, Lightbulb, Printer, ExternalLink, Check, Star, MessageSquare } from 'lucide-react';
 import { toTitleCase } from '@/utils';
 import type { SavedRecipe, Toast } from '@/types';
 import ShareCardModal from './ShareCardModal';
@@ -11,6 +11,7 @@ interface RecipeDetailOverlayProps {
   onAddToPlanner: (recipe: SavedRecipe) => void;
   onShareRecipe: (recipe: SavedRecipe) => void;
   showToast?: (message: string, type: Toast['type']) => void;
+  onUpdateRecipeMeta?: (name: string, updates: { rating?: number; personalNotes?: string }) => void;
   onClose: () => void;
 }
 
@@ -21,10 +22,40 @@ export default function RecipeDetailOverlay({
   onAddToPlanner,
   onShareRecipe,
   showToast,
+  onUpdateRecipeMeta,
   onClose,
 }: RecipeDetailOverlayProps) {
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
   const [shareOpen, setShareOpen] = useState(false);
+  const [localRating, setLocalRating] = useState<number>(recipe.rating || 0);
+  const [hoveredStar, setHoveredStar] = useState<number>(0);
+  const [localNotes, setLocalNotes] = useState<string>(recipe.personalNotes || '');
+  const notesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced notes saving
+  const saveNotes = useCallback((text: string) => {
+    if (notesTimerRef.current) clearTimeout(notesTimerRef.current);
+    notesTimerRef.current = setTimeout(() => {
+      onUpdateRecipeMeta?.(recipe.name, { personalNotes: text || undefined });
+    }, 600);
+  }, [onUpdateRecipeMeta, recipe.name]);
+
+  const handleNotesChange = (text: string) => {
+    if (text.length > 500) return;
+    setLocalNotes(text);
+    saveNotes(text);
+  };
+
+  const handleRatingClick = (star: number) => {
+    const newRating = star === localRating ? 0 : star;
+    setLocalRating(newRating);
+    onUpdateRecipeMeta?.(recipe.name, { rating: newRating || undefined });
+  };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => { if (notesTimerRef.current) clearTimeout(notesTimerRef.current); };
+  }, []);
 
   const toggleStep = (idx: number) => {
     setCheckedSteps(prev => {
@@ -264,6 +295,57 @@ export default function RecipeDetailOverlay({
                 <h3 className="text-sm font-bold text-[#C49A5C]">Why It Works</h3>
               </div>
               <p className="text-sm text-[#5A5548] leading-relaxed">{recipe.whyItWorks}</p>
+            </div>
+          )}
+
+          {/* Your Rating & Notes — only visible for favorited recipes */}
+          {isFavorite && onUpdateRecipeMeta && (
+            <div className="mx-6 my-4 p-5 bg-[#F4F2EA] rounded-2xl border border-[#E8E6DC]">
+              <div className="flex items-center gap-2 mb-4">
+                <MessageSquare className="w-4 h-4 text-[#C49A5C]" />
+                <h3 className="text-sm font-bold text-[#1A1A1A]">Your Notes</h3>
+              </div>
+
+              {/* Star Rating */}
+              <div className="flex items-center gap-1 mb-4">
+                <span className="text-xs text-[#6E6A60] mr-2 font-medium">Rating</span>
+                {[1, 2, 3, 4, 5].map(star => (
+                  <button
+                    key={star}
+                    onClick={() => handleRatingClick(star)}
+                    onMouseEnter={() => setHoveredStar(star)}
+                    onMouseLeave={() => setHoveredStar(0)}
+                    className="p-0.5 transition-transform duration-150 hover:scale-110 cursor-pointer"
+                    aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                  >
+                    <Star
+                      className={`w-5 h-5 transition-colors duration-150 ${
+                        star <= (hoveredStar || localRating)
+                          ? 'fill-[#C49A5C] text-[#C49A5C]'
+                          : 'text-[#D5D1C7]'
+                      }`}
+                    />
+                  </button>
+                ))}
+                {localRating > 0 && (
+                  <span className="text-xs text-[#6E6A60] ml-2">{localRating}/5</span>
+                )}
+              </div>
+
+              {/* Notes Textarea */}
+              <textarea
+                value={localNotes}
+                onChange={(e) => handleNotesChange(e.target.value)}
+                placeholder="Add your notes... (e.g., &quot;added extra garlic&quot;, &quot;kids loved it&quot;)"
+                className="w-full bg-white rounded-2xl p-4 text-sm text-[#3A3A3A] placeholder:text-[#B5B1A8] border border-[#E8E6DC] focus:border-[#C49A5C]/40 focus:outline-none resize-none leading-relaxed transition-colors"
+                rows={3}
+                maxLength={500}
+              />
+              <div className="flex justify-end mt-1.5">
+                <span className={`text-[10px] font-medium ${localNotes.length > 450 ? 'text-[#D4763C]' : 'text-[#B5B1A8]'}`}>
+                  {localNotes.length}/500
+                </span>
+              </div>
             </div>
           )}
 

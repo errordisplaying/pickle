@@ -44,7 +44,12 @@ export default function Navbar({
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 flex items-center justify-between bg-[#F4F2EA]/80 backdrop-blur-md h-16">
-        <div className="flex items-center gap-2">
+        <a
+          href="#"
+          onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          className="flex items-center gap-2 cursor-pointer"
+          aria-label="chickpea — back to home"
+        >
           <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-sm" aria-label="chickpea logo">
             <ellipse cx="32" cy="34" rx="26" ry="24" fill="#D4A96A" />
             <ellipse cx="32" cy="34" rx="26" ry="24" fill="url(#chickpea-grad)" />
@@ -60,7 +65,7 @@ export default function Navbar({
             </defs>
           </svg>
           <span className="font-bold text-lg text-[#1A1A1A] tracking-tight">chickpea</span>
-        </div>
+        </a>
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
@@ -70,7 +75,7 @@ export default function Navbar({
           <button onClick={() => setMode('testKitchen')} className={`text-sm font-medium transition-colors ${mode === 'testKitchen' ? 'text-[#C49A5C]' : 'text-[#6E6A60] hover:text-[#1A1A1A]'}`}>
             Test Kitchen
           </button>
-          <button onClick={() => onOpenPlanner()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors">
+          <button data-tour="planner" onClick={() => onOpenPlanner()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors">
             <Calendar className="w-5 h-5" />
           </button>
           <button onClick={() => onOpenShoppingList()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors relative">
@@ -81,7 +86,7 @@ export default function Navbar({
               </span>
             )}
           </button>
-          <button onClick={() => onOpenFavorites()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors relative">
+          <button data-tour="favorites" onClick={() => onOpenFavorites()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors relative">
             <Heart className={`w-5 h-5 ${favorites.length > 0 ? 'fill-red-400 text-red-400' : ''}`} />
             {favorites.length > 0 && (
               <span className="absolute -top-1 -right-2 w-4 h-4 bg-red-400 text-white text-[10px] font-bold rounded-full flex items-center justify-center">

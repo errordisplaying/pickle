@@ -13,6 +13,7 @@ export const STORAGE_KEYS = {
   SHOPPING_LIST: 'souschef_shopping_list',
   TASTE_PROFILE: 'souschef_taste_profile',
   ANALYTICS_SESSION: 'souschef_analytics_session',
+  ONBOARDING_COMPLETED: 'souschef_onboarding_completed',
 };
 
 export const INGREDIENT_CATEGORIES: Record<string, IngredientCategory> = {

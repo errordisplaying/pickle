@@ -33,6 +33,7 @@ import CommunitySection from '@/components/CommunitySection';
 import CtaSection from '@/components/CtaSection';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Analytics from '@/components/Analytics';
+import OnboardingTutorial from '@/components/OnboardingTutorial';
 
 // Lazy-loaded overlays & modals (code-split into separate chunks, loaded on demand)
 const PlannerOverlay = lazy(() => import('@/components/PlannerOverlay'));
@@ -138,6 +139,11 @@ function App() {
   // Gallery personalization
   const [selectedGalleryRecipe, setSelectedGalleryRecipe] = useState<SavedRecipe | null>(null);
   const [personalizedRecipes, setPersonalizedRecipes] = useState<ScoredRecipe[]>([]);
+
+  // Onboarding tutorial (first-visit only)
+  const [onboardingActive, setOnboardingActive] = useState(() =>
+    !loadFromStorage(STORAGE_KEYS.ONBOARDING_COMPLETED, false)
+  );
 
   // ── Auth / Cloud Sync State ─────────────────────────────────────
   const [session, setSession] = useState<Session | null>(null);
@@ -609,6 +615,16 @@ function App() {
     showToast('Recipe removed', 'info');
   };
 
+  const updateRecipeMeta = (recipeName: string, updates: { rating?: number; personalNotes?: string }) => {
+    setFavorites(prev =>
+      prev.map(f =>
+        f.name.toLowerCase() === recipeName.toLowerCase()
+          ? { ...f, ...updates }
+          : f
+      )
+    );
+  };
+
   // ── Planner Helpers ──────────────────────────────────────────
   const addRecipeToPlanner = (recipe: SavedRecipe, day: string, slot: 'breakfast' | 'lunch' | 'dinner') => {
     trackEvent(EVENTS.RECIPE_ADDED_TO_PLANNER, { recipeName: recipe.name, day, slot, tags: recipe.tags });
@@ -679,6 +695,12 @@ function App() {
     if (filled < total) {
       showToast(`Plan applied (${filled} of ${total} slots filled)`, 'info');
     }
+  };
+
+  // ── Onboarding ─────────────────────────────────────────────────
+  const handleOnboardingComplete = () => {
+    saveToStorage(STORAGE_KEYS.ONBOARDING_COMPLETED, true);
+    setOnboardingActive(false);
   };
 
   // ── Toast Notifications ─────────────────────────────────────────
@@ -1125,6 +1147,7 @@ function App() {
           }}
           onShareRecipe={shareRecipe}
           showToast={showToast}
+          onUpdateRecipeMeta={updateRecipeMeta}
           onClose={() => setSelectedGalleryRecipe(null)}
         />
         </Suspense>
@@ -1197,6 +1220,11 @@ function App() {
         </Suspense>
         </ErrorBoundary>,
         document.body
+      )}
+
+      {/* Onboarding Tutorial (first visit only) */}
+      {onboardingActive && (
+        <OnboardingTutorial onComplete={handleOnboardingComplete} />
       )}
 
       {/* Toast Notifications */}

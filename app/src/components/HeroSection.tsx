@@ -182,7 +182,7 @@ export default function HeroSection({
       </div>
 
       {/* Input Panel */}
-      <div className="hero-panel absolute left-[66vw] top-[20vh] w-[28vw] min-w-[320px] bg-warm-white border border-black/5 rounded-[28px] p-6 shadow-xl">
+      <div data-tour="search" className="hero-panel absolute left-[66vw] top-[20vh] w-[28vw] min-w-[320px] bg-warm-white border border-black/5 rounded-[28px] p-6 shadow-xl">
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setMode('recipe')}
@@ -283,7 +283,7 @@ export default function HeroSection({
             </div>
 
             {/* Smart Search Toggle */}
-            <div className="flex items-center justify-between px-1">
+            <div data-tour="smart-search" className="flex items-center justify-between px-1">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#C49A5C]" />
                 <span className="text-xs font-medium text-[#6E6A60]">Smart Search</span>

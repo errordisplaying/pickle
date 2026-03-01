@@ -1,4 +1,4 @@
-import { X, Calendar, Clock, Heart, Flame } from 'lucide-react';
+import { X, Calendar, Clock, Heart, Flame, Star, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { SavedRecipe } from '@/types';
 import { toTitleCase } from '@/utils';
@@ -75,6 +75,27 @@ export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToP
                   <div className="p-4">
                     {recipe.description && (
                       <p className="text-xs text-[#6E6A60] line-clamp-2 mb-3 leading-relaxed">{recipe.description}</p>
+                    )}
+                    {/* Rating & notes indicator */}
+                    {(recipe.rating || recipe.personalNotes) && (
+                      <div className="flex items-center gap-2 mb-3">
+                        {recipe.rating && recipe.rating > 0 && (
+                          <div className="flex items-center gap-0.5">
+                            {[1, 2, 3, 4, 5].map(s => (
+                              <Star
+                                key={s}
+                                className={`w-3 h-3 ${s <= recipe.rating! ? 'fill-[#C49A5C] text-[#C49A5C]' : 'text-[#E8E6DC]'}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                        {recipe.personalNotes && (
+                          <div className="flex items-center gap-1 text-[#6E6A60]">
+                            <MessageSquare className="w-3 h-3" />
+                            <span className="text-[10px] font-medium">Note</span>
+                          </div>
+                        )}
+                      </div>
                     )}
                     <div className="flex items-center gap-3 text-xs text-[#6E6A60] mb-3">
                       {recipe.nutrition.calories > 0 && (

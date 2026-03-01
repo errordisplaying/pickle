@@ -23,6 +23,8 @@ export interface SavedRecipe {
   difficulty: string;
   savedAt: number;
   source: 'scraped' | 'demo' | 'gallery' | 'manual';
+  rating?: number;
+  personalNotes?: string;
 }
 
 export interface PlannerDay {
