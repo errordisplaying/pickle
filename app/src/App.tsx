@@ -30,6 +30,7 @@ import SmartSwapSection from '@/components/SmartSwapSection';
 import PlannerPreviewSection from '@/components/PlannerPreviewSection';
 import NutritionSection from '@/components/NutritionSection';
 import CommunitySection from '@/components/CommunitySection';
+import KitchenConfidenceSection from '@/components/KitchenConfidenceSection';
 import CtaSection from '@/components/CtaSection';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Analytics from '@/components/Analytics';
@@ -249,7 +250,10 @@ function App() {
 
   // Initialize GSAP ScrollTrigger animations
   useEffect(() => {
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia();
+
+    // ── Desktop: full pinned parallax animations ──────────────
+    mm.add("(min-width: 1024px)", () => {
       // Hero Section Animations
       const heroTl = gsap.timeline({
         scrollTrigger: {
@@ -421,10 +425,29 @@ function App() {
           { x: '-10vw', opacity: 0, ease: 'power2.in' },
           0.7
         );
+    });
 
-    }, mainRef);
+    // ── Mobile: lightweight fade-in-on-scroll ─────────────────
+    mm.add("(max-width: 1023px)", () => {
+      gsap.utils.toArray<HTMLElement>('.section-pinned').forEach((section) => {
+        gsap.fromTo(section,
+          { opacity: 0, y: 40 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
+            },
+          }
+        );
+      });
+    });
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   // ── localStorage Persistence ──────────────────────────────────
@@ -937,13 +960,21 @@ function App() {
 
   return (
     <div ref={mainRef} className="relative bg-warm-white">
+      {/* Skip to main content — accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-[#C49A5C] focus:text-white focus:rounded-full focus:text-sm focus:font-semibold focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
       {/* Grain Overlay */}
       <div className="grain-overlay" />
 
       {/* Floating Next Section Arrow */}
       <button
         onClick={scrollToNextSection}
-        className="fixed right-5 top-1/2 -translate-y-1/2 z-[100] group flex items-center gap-2 cursor-pointer"
+        className="fixed right-5 top-1/2 -translate-y-1/2 z-[100] group hidden lg:flex items-center gap-2 cursor-pointer"
         aria-label={`Go to ${nextSectionLabel}`}
       >
         <span className="px-3 py-1.5 rounded-full bg-white/60 backdrop-blur-md border border-[#C49A5C]/15 text-[11px] font-semibold text-[#C49A5C] opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 whitespace-nowrap shadow-sm">
@@ -973,6 +1004,7 @@ function App() {
       />
 
       {/* Section 1: Hero */}
+      <main id="main-content">
       <ErrorBoundary fallback={<SectionErrorFallback />}>
       <HeroSection
         heroRef={heroRef}
@@ -1160,6 +1192,11 @@ function App() {
         <CommunitySection communityRef={communityRef} />
       </ErrorBoundary>
 
+      {/* Kitchen Confidence Tips */}
+      <ErrorBoundary fallback={<SectionErrorFallback />}>
+        <KitchenConfidenceSection />
+      </ErrorBoundary>
+
       {/* Recommended Essentials */}
       <ErrorBoundary fallback={<SectionErrorFallback />}>
         <SponsoredSection title="Sponsored &middot; Recommended Kitchen Essentials" className="bg-warm-gray z-[65]" />
@@ -1175,6 +1212,7 @@ function App() {
         }}
       />
       </ErrorBoundary>
+      </main>
 
       {/* Nutrition Goals Modal (portalled to escape GSAP transforms) */}
       {goalsSettingsOpen && createPortal(

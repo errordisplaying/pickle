@@ -118,7 +118,8 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
           <h3 className="text-lg font-bold text-[#1A1A1A]">Share Recipe</h3>
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-[#E8E6DC] hover:bg-[#DDD9CE] transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-[#E8E6DC] hover:bg-[#DAD6CC] transition-colors"
+            aria-label="Close share dialog"
           >
             <X className="w-4 h-4 text-[#6E6A60]" />
           </button>
@@ -128,7 +129,7 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
         <div className="px-6 pb-4">
           <div className="rounded-[16px] overflow-hidden shadow-md border border-[#E8E6DC] bg-white">
             {generating ? (
-              <div className="flex items-center justify-center h-[180px] text-[#8B8579]">
+              <div className="flex items-center justify-center h-[180px] text-[#6E6A60]">
                 <div className="w-6 h-6 border-2 border-[#C49A5C] border-t-transparent rounded-full animate-spin mr-3" />
                 Generating card...
               </div>
@@ -139,7 +140,7 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
                 className="w-full h-auto"
               />
             ) : (
-              <div className="flex items-center justify-center h-[180px] text-[#8B8579]">
+              <div className="flex items-center justify-center h-[180px] text-[#6E6A60]">
                 Could not generate preview
               </div>
             )}
@@ -188,7 +189,7 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
 
         {/* Social platform links */}
         <div className="px-6 pb-6">
-          <p className="text-xs text-[#8B8579] mb-2 font-medium uppercase tracking-wider">Share to</p>
+          <p className="text-xs text-[#6E6A60] mb-2 font-medium uppercase tracking-wider">Share to</p>
           <div className="flex gap-2">
             <a
               href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodedUrl}&hashtags=chickpea`}

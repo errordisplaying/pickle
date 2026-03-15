@@ -44,6 +44,7 @@
     --chickpea-cream: #F7F3EB;
     --olive-soft: #8B9E6B;
     --olive-muted: #A8B590;
+    --terracotta: #D4763C;
   }
 }
 
@@ -105,7 +106,18 @@
   }
 
   .section-pinned {
-    @apply relative w-screen h-screen overflow-hidden;
+    @apply relative w-full;
+    min-height: 100vh;
+    min-height: 100dvh; /* use dynamic viewport height on mobile */
+    overflow: visible;
+  }
+
+  @media (min-width: 1024px) {
+    .section-pinned {
+      @apply w-screen h-screen;
+      min-height: auto;
+      overflow: hidden;
+    }
   }
 
   .section-flowing {
@@ -114,6 +126,10 @@
 
   .image-grade {
     filter: saturate(0.92) contrast(0.98) brightness(1.02);
+    transition: transform 0.3s ease;
+  }
+  .image-grade:hover {
+    transform: scale(1.05);
   }
 
   /* Smooth section divider */
@@ -154,6 +170,21 @@
 
   .bg-chickpea-dark {
     background-color: var(--chickpea-dark);
+  }
+
+  .text-terracotta {
+    color: var(--terracotta);
+  }
+
+  .bg-terracotta {
+    background-color: var(--terracotta);
+  }
+}
+
+@layer components {
+  /* Shared section heading: pair with a responsive text-size class */
+  .section-heading {
+    @apply font-black lowercase text-[#1A1A1A] leading-none;
   }
 }
 
@@ -375,13 +406,17 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* Card hover lift */
+/* Card hover lift + touch feedback */
 .card-hover {
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .card-hover:hover {
   transform: translateY(-4px);
   box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+}
+.card-hover:active {
+  transform: scale(0.98);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
 }
 
 /* Favorite heart pop animation */
@@ -424,6 +459,34 @@
   animation: overlaySlideUp 0.35s ease-out;
 }
 
+/* Overlay exit - slide down with fade */
+@keyframes overlaySlideDown {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(24px); }
+}
+.animate-overlay-out {
+  animation: overlaySlideDown 0.25s ease-in forwards;
+}
+
+/* Snap-scroll for horizontal card sliders */
+.snap-slider {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.snap-slider > * {
+  scroll-snap-align: start;
+}
+
+/* Staggered card entrance */
+@keyframes cardStagger {
+  from { opacity: 0; transform: translateY(16px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-card-stagger {
+  opacity: 0;
+  animation: cardStagger 0.4s ease-out forwards;
+}
+
 /* Ripple effect for buttons */
 .btn-ripple {
   position: relative;
@@ -439,4 +502,27 @@
 }
 .btn-ripple:active::after {
   opacity: 1;
+}
+
+/* ── Print Styles ────────────────────────────────────────────── */
+@media print {
+  nav,
+  .grain-overlay,
+  .animate-toast-in,
+  footer,
+  .btn-press,
+  .btn-ripple {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  img {
+    max-width: 100% !important;
+    break-inside: avoid;
+  }
 }

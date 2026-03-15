@@ -3,6 +3,7 @@ import { X, Heart, Calendar, Share2, Clock, Flame, ChefHat, Lightbulb, Printer, 
 import { toTitleCase } from '@/utils';
 import type { SavedRecipe, Toast } from '@/types';
 import ShareCardModal from './ShareCardModal';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 
 interface RecipeDetailOverlayProps {
   recipe: SavedRecipe;
@@ -70,18 +71,13 @@ export default function RecipeDetailOverlay({
     window.print();
   };
 
-  // Close on Escape key
+  // Lock body scroll while overlay is open (Escape is handled by useFocusTrap)
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKey);
     document.body.style.overflow = 'hidden';
     return () => {
-      window.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
     };
-  }, [onClose]);
+  }, []);
 
   // Parse numeric value from nutrition string like "25g" -> 25
   const parseNutrition = (val: string | number): number => {
@@ -98,6 +94,8 @@ export default function RecipeDetailOverlay({
   const carbsPct = totalMacroGrams > 0 ? Math.round((carbs / totalMacroGrams) * 100) : 0;
   const fatPct = totalMacroGrams > 0 ? 100 - proteinPct - carbsPct : 0;
 
+  const trapRef = useFocusTrap(onClose);
+
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
@@ -108,6 +106,10 @@ export default function RecipeDetailOverlay({
 
       {/* Content Card */}
       <div
+        ref={trapRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Recipe: ${toTitleCase(recipe.name)}`}
         className="relative w-full max-w-[900px] max-h-[90vh] bg-[#F4F2EA] rounded-[28px] overflow-hidden shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
@@ -128,6 +130,7 @@ export default function RecipeDetailOverlay({
             <button
               onClick={onClose}
               className="absolute top-4 right-4 w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors"
+              aria-label="Close recipe details"
             >
               <X className="w-5 h-5" />
             </button>

@@ -1,7 +1,11 @@
-import { X, ShoppingCart, Check } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { X, ShoppingCart, Check, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ShoppingItem, IngredientCategory } from '@/types';
+import { STORAGE_KEYS } from '@/constants';
+import { cookingTips } from '@/data';
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 
 interface ShoppingListOverlayProps {
   shoppingList: ShoppingItem[];
@@ -22,21 +26,36 @@ export default function ShoppingListOverlay({
   onOpenPlanner,
   onClose,
 }: ShoppingListOverlayProps) {
+  const [closing, setClosing] = useState(false);
+  const handleClose = useCallback(() => {
+    setClosing(true);
+    setTimeout(onClose, 250);
+  }, [onClose]);
+
+  const [tipIndex] = useState(() => {
+    const stored = parseInt(localStorage.getItem(STORAGE_KEYS.TIP_INDEX) || '0', 10);
+    const next = (stored + 1) % cookingTips.length;
+    localStorage.setItem(STORAGE_KEYS.TIP_INDEX, String(next));
+    return stored;
+  });
+  const currentTip = cookingTips[tipIndex];
+
   useBodyScrollLock();
+  const trapRef = useFocusTrap(handleClose);
   return (
-    <div className="fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[203] flex flex-col overflow-y-auto animate-overlay-in">
+    <div ref={trapRef} role="dialog" aria-modal="true" aria-label="Shopping list" className={`fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[203] flex flex-col overflow-y-auto ${closing ? 'animate-overlay-out' : 'animate-overlay-in'}`}>
       {/* Header */}
-      <div className="px-4 sm:px-8 py-5 border-b border-black/5">
+      <div className="px-5 sm:px-8 py-5 border-b border-black/5">
         {/* Top row: title + close */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ShoppingCart className="w-6 h-6 text-[#C49A5C]" />
-            <h2 className="text-xl sm:text-2xl font-black uppercase text-[#1A1A1A]">Shopping List</h2>
+            <h2 className="text-xl sm:text-2xl font-black lowercase text-[#1A1A1A]">shopping list</h2>
             <span className="text-sm text-[#6E6A60] hidden sm:inline">
               ({shoppingList.filter(i => !i.purchased).length} remaining)
             </span>
           </div>
-          <Button onClick={onClose} variant="outline" className="rounded-full h-10 w-10 p-0 flex items-center justify-center flex-shrink-0">
+          <Button onClick={handleClose} variant="outline" className="rounded-full h-10 w-10 p-0 flex items-center justify-center flex-shrink-0" aria-label="Close shopping list">
             <X className="w-5 h-5" />
           </Button>
         </div>
@@ -62,7 +81,7 @@ export default function ShoppingListOverlay({
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-4 sm:px-8 py-6">
+      <div className="flex-1 px-5 sm:px-8 py-6">
         <div className="max-w-3xl mx-auto">
           {shoppingList.length === 0 ? (
             <div className="text-center py-20 max-w-md mx-auto">
@@ -85,8 +104,21 @@ export default function ShoppingListOverlay({
               <h3 className="text-xl font-bold text-[#1A1A1A] mb-2">your list is empty</h3>
               <p className="text-[#6E6A60] text-sm leading-relaxed mb-6">Add meals to your planner first, then we'll generate a smart shopping list grouped by aisle.</p>
               <Button onClick={onOpenPlanner} className="bg-[#C49A5C] text-white hover:bg-[#8B6F3C] rounded-full btn-press">
-                Open Meal Planner
+                Open Planner
               </Button>
+
+              {/* Rotating cooking tip */}
+              <div className="mt-8 bg-[#F4F2EA] rounded-2xl p-4 max-w-sm mx-auto border border-[#E8E6DC]">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-[#C49A5C]/10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Lightbulb className="w-4 h-4 text-[#C49A5C]" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#1A1A1A] mb-0.5">{currentTip.title}</p>
+                    <p className="text-xs text-[#6E6A60] leading-relaxed">{currentTip.description}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <>
@@ -98,7 +130,7 @@ export default function ShoppingListOverlay({
                 </div>
                 <div className="h-2 bg-[#E8E6DC] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                    className="h-full bg-[#8B9E6B] rounded-full transition-all duration-300"
                     style={{ width: `${(shoppingList.filter(i => i.purchased).length / shoppingList.length) * 100}%` }}
                   />
                 </div>
@@ -124,7 +156,7 @@ export default function ShoppingListOverlay({
                           } border border-black/5`}
                         >
                           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                            item.purchased ? 'bg-emerald-500 border-emerald-500' : 'border-[#C49A5C]/30'
+                            item.purchased ? 'bg-[#8B9E6B] border-[#8B9E6B]' : 'border-[#C49A5C]/30'
                           }`}>
                             {item.purchased && <Check className="w-3 h-3 text-white" />}
                           </div>

@@ -508,7 +508,7 @@ export async function generateRecipeCard(recipe: {
   // Macros row
   if (recipe.nutrition && recipe.nutrition.calories > 0) {
     ctx.font = '20px -apple-system, "Segoe UI", sans-serif';
-    ctx.fillStyle = '#8B8579';
+    ctx.fillStyle = '#6E6A60';
     const macros = `P: ${recipe.nutrition.protein}  •  C: ${recipe.nutrition.carbs}  •  F: ${recipe.nutrition.fat}`;
     ctx.fillText(macros, contentX, y);
     y += 36;
@@ -526,7 +526,7 @@ export async function generateRecipeCard(recipe: {
       y += 30;
     }
     if (recipe.ingredients.length > 5) {
-      ctx.fillStyle = '#8B8579';
+      ctx.fillStyle = '#6E6A60';
       ctx.fillText(`  + ${recipe.ingredients.length - 5} more`, contentX, y);
     }
   }

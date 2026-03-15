@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   TASTE_PROFILE: 'souschef_taste_profile',
   ANALYTICS_SESSION: 'souschef_analytics_session',
   ONBOARDING_COMPLETED: 'souschef_onboarding_completed',
+  TIP_INDEX: 'souschef_tip_index',
 };
 
 export const INGREDIENT_CATEGORIES: Record<string, IngredientCategory> = {

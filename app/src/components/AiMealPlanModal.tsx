@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Sparkles, X } from 'lucide-react';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import type { NutritionGoals, SavedRecipe, Toast } from '@/types';
@@ -56,7 +57,7 @@ export default function AiMealPlanModal({
         return;
       }
       if (!res.ok) {
-        setError('Could not generate plan. Please try again.');
+        setError('Something went wrong generating your plan. Give it another try!');
         return;
       }
 
@@ -68,15 +69,17 @@ export default function AiMealPlanModal({
         setError('Unexpected response. Please try again.');
       }
     } catch {
-      setError('Could not reach AI service. Check your connection.');
+      setError('Hmm, Chickpea can\'t connect right now. Check your internet and try again!');
     } finally {
       setGenerating(false);
     }
   };
 
+  const trapRef = useFocusTrap(onClose);
+
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[260] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-[24px] max-w-md w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div ref={trapRef} role="dialog" aria-modal="true" aria-label="AI meal planner" className="bg-white rounded-[24px] max-w-md w-full shadow-2xl" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-black/5">
           <div className="flex items-center gap-3">
@@ -88,7 +91,7 @@ export default function AiMealPlanModal({
               <p className="text-xs text-[#6E6A60]">Describe your preferences and we'll plan your week</p>
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-[#F4F2EA] flex items-center justify-center hover:bg-[#E8E6DC] transition-colors">
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-[#F4F2EA] flex items-center justify-center hover:bg-[#E8E6DC] transition-colors" aria-label="Close AI meal planner">
             <X className="w-4 h-4 text-[#6E6A60]" />
           </button>
         </div>
@@ -133,7 +136,7 @@ export default function AiMealPlanModal({
           </div>
 
           {/* Recipe pool info */}
-          <p className="text-xs text-[#8B8579]">
+          <p className="text-xs text-[#6E6A60]">
             {availableRecipes.length} recipes available
             {availableRecipes.length < 7 && (
               <span className="text-amber-500 ml-1">

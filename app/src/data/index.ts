@@ -525,3 +525,83 @@ export const suggestedRecipes = [
     tags: ['Vegetarian', 'Quick'],
   },
 ];
+
+/* ── Kitchen Confidence — Cooking Tips ────────────────────────────── */
+
+/** Rotating tips shown in overlay empty states */
+export const cookingTips = [
+  {
+    id: 'tip-1',
+    title: 'Season as You Go',
+    description: 'Add a pinch of salt at each cooking stage rather than all at the end — layers of seasoning build deeper flavor.',
+  },
+  {
+    id: 'tip-2',
+    title: 'Let Meat Rest',
+    description: 'After cooking, rest meat for 5–10 minutes. The juices redistribute, giving you a more tender result.',
+  },
+  {
+    id: 'tip-3',
+    title: 'Pat Proteins Dry',
+    description: 'Dry surfaces sear better. Blot chicken, fish, or tofu with paper towels before cooking for a golden crust.',
+  },
+  {
+    id: 'tip-4',
+    title: 'Preheat the Pan',
+    description: 'A properly heated pan prevents sticking and creates better caramelization. Wait until oil shimmers before adding food.',
+  },
+  {
+    id: 'tip-5',
+    title: 'Taste Before Serving',
+    description: 'Always taste and adjust seasoning right before plating. A squeeze of lemon or pinch of salt can transform a dish.',
+  },
+  {
+    id: 'tip-6',
+    title: 'Mise en Place',
+    description: 'Prep and measure all ingredients before you start cooking. It keeps the process smooth and prevents mistakes.',
+  },
+  {
+    id: 'tip-7',
+    title: 'Acid Brightens Flavor',
+    description: 'A splash of vinegar or citrus at the end lifts dull dishes. It cuts richness and makes every flavor pop.',
+  },
+  {
+    id: 'tip-8',
+    title: 'Room Temp Ingredients',
+    description: 'Cold butter and eggs to room temperature 30 minutes before baking — they emulsify much better when not ice-cold.',
+  },
+  {
+    id: 'tip-9',
+    title: 'Sharp Knives are Safer',
+    description: 'A dull knife requires more force and slips more easily. Hone your blade before each session for cleaner, safer cuts.',
+  },
+  {
+    id: 'tip-10',
+    title: 'Don\'t Crowd the Pan',
+    description: 'Overcrowding lowers the temperature and steams food instead of searing it. Cook in batches for proper browning.',
+  },
+];
+
+/** Tips displayed on the Kitchen Confidence landing page section */
+export const kitchenConfidenceTips = [
+  {
+    icon: 'chef-hat',
+    title: 'Knife Basics',
+    description: 'A sharp knife and a stable cutting board are the foundation of every great meal. Master the rock-chop and you\'re halfway there.',
+  },
+  {
+    icon: 'flame',
+    title: 'Heat Control',
+    description: 'High heat sears and caramelizes. Low heat braises and melts. Knowing when to use each is what separates good cooks from great ones.',
+  },
+  {
+    icon: 'clock',
+    title: 'Timing is Everything',
+    description: 'Start with the longest-cooking items and work backwards. A little planning means everything hits the table hot and fresh.',
+  },
+  {
+    icon: 'droplets',
+    title: 'Balance Your Flavors',
+    description: 'Every dish needs salt, fat, acid, and heat in balance. If something tastes flat, it probably just needs a squeeze of lemon.',
+  },
+];

@@ -13,9 +13,11 @@ export default function PlannerPreviewSection({ plannerRef, plannerMeals, onOpen
     <section ref={plannerRef} className="section-pinned z-40">
       <div className="absolute inset-0 bg-warm-white" />
 
+      <div className="relative flex flex-col gap-6 px-4 pt-20 pb-8 lg:contents">
+
       {/* Left Text Block */}
-      <div className="planner-text absolute left-[6vw] top-[24vh] w-[28vw]">
-        <h2 className="text-[clamp(2rem,4vw,3.5rem)] font-black lowercase text-[#1A1A1A] leading-none mb-6">
+      <div className="planner-text relative w-full lg:absolute lg:left-[6vw] lg:top-[24vh] lg:w-[28vw]">
+        <h2 className="section-heading text-[clamp(2rem,4vw,3.5rem)] mb-6">
           Plan A Week In Minutes
         </h2>
         <p className="text-[#6E6A60] text-lg leading-relaxed mb-4">
@@ -46,13 +48,13 @@ export default function PlannerPreviewSection({ plannerRef, plannerMeals, onOpen
       </div>
 
       {/* Planner Preview Card */}
-      <div className="planner-card absolute left-[38vw] top-[16vh] w-[56vw] h-[70vh] japandi-card bg-white p-5">
-        {/* Mini week view */}
-        <div className="grid grid-cols-7 gap-2 h-full">
+      <div className="planner-card relative w-full h-auto lg:absolute lg:left-[38vw] lg:top-[16vh] lg:w-[56vw] lg:h-[70vh] japandi-card bg-white p-4 lg:p-5">
+        {/* Mini week view — horizontal scroll on mobile, grid on desktop */}
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-7 lg:gap-2 lg:h-full lg:overflow-visible">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
             <div
               key={day}
-              className="day-tile flex flex-col rounded-2xl bg-[#F4F2EA] p-3 cursor-pointer hover:bg-[#E8E6DC] transition-colors"
+              className="day-tile flex-shrink-0 w-[140px] lg:w-auto flex flex-col rounded-2xl bg-[#F4F2EA] p-3 cursor-pointer hover:bg-[#E8E6DC] transition-colors"
               onClick={() => onOpenPlanner(day)}
             >
               <p className="text-xs font-bold text-[#1A1A1A] mb-2 text-center">{day}</p>
@@ -78,6 +80,8 @@ export default function PlannerPreviewSection({ plannerRef, plannerMeals, onOpen
           ))}
         </div>
       </div>
+
+      </div>{/* end mobile flex / lg:contents wrapper */}
     </section>
   );
 }

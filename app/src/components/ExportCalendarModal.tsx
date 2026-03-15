@@ -1,4 +1,5 @@
 import { X, ExternalLink, Calendar } from 'lucide-react';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 import type { PlannerWeek, SavedRecipe } from '@/types';
 import { generateGoogleCalendarUrl, toTitleCase } from '@/utils';
 
@@ -8,9 +9,10 @@ interface ExportCalendarModalProps {
 }
 
 const ExportCalendarModal = ({ plannerMeals, onClose }: ExportCalendarModalProps) => {
+  const trapRef = useFocusTrap(onClose);
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[250] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-[24px] max-w-lg w-full max-h-[70vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div ref={trapRef} role="dialog" aria-modal="true" aria-label="Export to calendar" className="bg-white rounded-[24px] max-w-lg w-full max-h-[70vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-black/5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#C49A5C]/10 rounded-2xl flex items-center justify-center">
@@ -21,7 +23,7 @@ const ExportCalendarModal = ({ plannerMeals, onClose }: ExportCalendarModalProps
               <p className="text-xs text-[#6E6A60]">Click each meal to add it to your calendar</p>
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-[#F4F2EA] flex items-center justify-center hover:bg-[#E8E6DC] transition-colors">
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-[#F4F2EA] flex items-center justify-center hover:bg-[#E8E6DC] transition-colors" aria-label="Close export dialog">
             <X className="w-4 h-4 text-[#6E6A60]" />
           </button>
         </div>

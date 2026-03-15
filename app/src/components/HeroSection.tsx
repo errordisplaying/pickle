@@ -147,7 +147,7 @@ export default function HeroSection({
 
       trackEvent(EVENTS.TEST_KITCHEN_MESSAGE, { dishName: tkDishName });
     } catch {
-      setTkMessages(prev => [...prev, { role: 'system', content: 'Could not reach Chickpea. Check your connection.', timestamp: Date.now() }]);
+      setTkMessages(prev => [...prev, { role: 'system', content: 'Hmm, Chickpea can\'t connect right now. Check your internet and try again!', timestamp: Date.now() }]);
     } finally {
       setTkLoading(false);
     }
@@ -165,31 +165,18 @@ export default function HeroSection({
     <section ref={heroRef} className="section-pinned z-10">
       <div className="absolute inset-0 bg-warm-white" />
 
-      {/* Hero Image Card with Headline Overlay */}
-      <div className="hero-image absolute left-[6vw] top-[14vh] w-[58vw] h-[72vh] japandi-card">
-        <img
-          src="/hero_search_preview.jpg"
-          alt="chickpea search preview"
-          className="w-full h-full object-cover image-grade"
-        />
-        {/* Gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-[28px]" />
+      {/* Mobile: flex-col stack (image first, search below); Desktop: absolute positioning via lg: */}
+      <div className="relative flex flex-col gap-6 px-4 pt-20 pb-8 lg:contents">
 
-        {/* Animated walkthrough on image */}
-        <div className="hero-headline absolute bottom-8 left-8 right-8 z-20">
-          <HeroWalkthrough />
-        </div>
-      </div>
-
-      {/* Input Panel */}
-      <div data-tour="search" className="hero-panel absolute left-[66vw] top-[20vh] w-[28vw] min-w-[320px] bg-warm-white border border-black/5 rounded-[28px] p-6 shadow-xl">
+        {/* Input Panel — order-2 on mobile (below the image) */}
+        <div data-tour="search" className="hero-panel relative w-full order-2 lg:order-none lg:absolute lg:left-[66vw] lg:top-[20vh] lg:w-[28vw] lg:min-w-[320px] bg-warm-white border border-black/5 rounded-[28px] p-6 shadow-xl z-20">
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setMode('recipe')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full text-sm font-semibold transition-all ${
               mode === 'recipe'
                 ? 'bg-[#C49A5C] text-white'
-                : 'bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#ddd9cc]'
+                : 'bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#DAD6CC]'
             }`}
           >
             <Search className="w-4 h-4" /> Find Recipes
@@ -199,7 +186,7 @@ export default function HeroSection({
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full text-sm font-semibold transition-all ${
               mode === 'testKitchen'
                 ? 'bg-[#C49A5C] text-white'
-                : 'bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#ddd9cc]'
+                : 'bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#DAD6CC]'
             }`}
           >
             <Beaker className="w-4 h-4" /> Test Kitchen
@@ -273,7 +260,7 @@ export default function HeroSection({
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                       activeDietaryFilters.includes(filter)
                         ? 'bg-[#C49A5C] text-white shadow-sm'
-                        : 'bg-[#E8E6DC] text-[#6E6A60] hover:bg-[#ddd9cc]'
+                        : 'bg-[#E8E6DC] text-[#6E6A60] hover:bg-[#DAD6CC]'
                     }`}
                   >
                     {filter}
@@ -319,13 +306,13 @@ export default function HeroSection({
             </Button>
 
             <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary" className="bg-[#E8E6DC] text-[#6E6A60] hover:bg-[#ddd9cc] cursor-pointer rounded-full">
+              <Badge variant="secondary" className="bg-[#E8E6DC] text-[#6E6A60] hover:bg-[#DAD6CC] cursor-pointer rounded-full">
                 Clear fridge
               </Badge>
-              <Badge variant="secondary" className="bg-[#E8E6DC] text-[#6E6A60] hover:bg-[#ddd9cc] cursor-pointer rounded-full">
+              <Badge variant="secondary" className="bg-[#E8E6DC] text-[#6E6A60] hover:bg-[#DAD6CC] cursor-pointer rounded-full">
                 High protein
               </Badge>
-              <Badge variant="secondary" className="bg-[#E8E6DC] text-[#6E6A60] hover:bg-[#ddd9cc] cursor-pointer rounded-full">
+              <Badge variant="secondary" className="bg-[#E8E6DC] text-[#6E6A60] hover:bg-[#DAD6CC] cursor-pointer rounded-full">
                 Under 30 min
               </Badge>
             </div>
@@ -352,7 +339,7 @@ export default function HeroSection({
                   placeholder="Type and press Enter"
                   className="bg-white border-[#E8E6DC] rounded-2xl text-sm flex-1"
                 />
-                <Button onClick={addIngredientChip} className="bg-[#C49A5C] text-white rounded-full px-3">
+                <Button onClick={addIngredientChip} className="bg-[#C49A5C] text-white rounded-full px-3" aria-label="Add ingredient">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -363,7 +350,7 @@ export default function HeroSection({
                 {tkIngredients.map((ing, idx) => (
                   <Badge key={idx} className="bg-[#E8E6DC] text-[#1A1A1A] rounded-full px-3 py-1">
                     {ing}
-                    <button onClick={() => removeIngredientChip(ing)} className="ml-2">
+                    <button onClick={() => removeIngredientChip(ing)} className="ml-2" aria-label={`Remove ${ing}`}>
                       <X className="w-3 h-3" />
                     </button>
                   </Badge>
@@ -441,6 +428,7 @@ export default function HeroSection({
                 onClick={() => sendMessage(tkInput)}
                 disabled={tkLoading || !tkInput.trim()}
                 className="bg-[#C49A5C] text-white rounded-full px-3 btn-press"
+                aria-label="Send message"
               >
                 <Send className="w-4 h-4" />
               </Button>
@@ -461,9 +449,27 @@ export default function HeroSection({
         )}
       </div>
 
+        {/* Hero Image Card — order-1 on mobile (above search) */}
+        <div className="hero-image relative w-full h-[50vh] order-1 lg:order-none lg:absolute lg:left-[6vw] lg:top-[14vh] lg:w-[58vw] lg:h-[72vh] japandi-card">
+          <img
+            src="/hero_search_preview.jpg"
+            alt="chickpea search preview"
+            className="w-full h-full object-cover image-grade"
+          />
+          {/* Gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-[28px]" />
+
+          {/* Animated walkthrough on image */}
+          <div className="hero-headline absolute bottom-8 left-8 right-8 z-20">
+            <HeroWalkthrough />
+          </div>
+        </div>
+
+      </div>{/* end mobile flex / lg:contents wrapper */}
+
       {/* Loading Skeleton Overlay */}
       {loading && !recipeData && (
-        <div className="absolute inset-0 bg-[#F4F2EA]/95 backdrop-blur-sm z-30 flex items-start justify-center overflow-y-auto py-8 px-4">
+        <div className="fixed lg:absolute inset-0 bg-[#F4F2EA]/95 backdrop-blur-sm z-30 flex items-start justify-center overflow-y-auto py-8 px-4" role="status" aria-live="polite" aria-label="Searching for recipes">
           <div className="max-w-6xl w-full">
             <div className="mb-8 py-4 px-2">
               <Skeleton className="h-9 w-72 bg-[#E8E6DC] rounded-2xl mb-2" />
@@ -492,12 +498,12 @@ export default function HeroSection({
 
       {/* Recipe Results Overlay */}
       {recipeData && (
-        <div className="absolute inset-0 bg-[#F4F2EA]/95 backdrop-blur-sm z-30 flex items-start justify-center overflow-y-auto py-8 px-4">
+        <div className="fixed lg:absolute inset-0 bg-[#F4F2EA]/95 backdrop-blur-sm z-30 flex items-start justify-center overflow-y-auto py-8 px-4">
           <div className="max-w-6xl w-full">
             {/* Header */}
             <div className="flex items-center justify-between mb-8 sticky top-0 bg-[#F4F2EA]/90 backdrop-blur-md py-4 px-2 -mx-2 z-10 rounded-2xl">
               <div>
-                <h2 className="text-3xl font-black uppercase text-[#1A1A1A]">Here's What I Found</h2>
+                <h2 className="text-3xl font-black lowercase text-[#1A1A1A]">here's what I found</h2>
                 {recipeData.source === 'scraped' && (
                   <p className="text-sm text-[#C49A5C] mt-1 font-medium">Scraped from top cooking websites</p>
                 )}
@@ -505,7 +511,7 @@ export default function HeroSection({
                   <p className="text-sm text-[#6E6A60] mt-1">Showing suggested recipes</p>
                 )}
               </div>
-              <Button onClick={onCloseResults} variant="outline" className="rounded-full h-10 w-10 p-0 flex items-center justify-center">
+              <Button onClick={onCloseResults} variant="outline" className="rounded-full h-10 w-10 p-0 flex items-center justify-center" aria-label="Close results">
                 <X className="w-5 h-5" />
               </Button>
             </div>
@@ -523,6 +529,7 @@ export default function HeroSection({
                         <button
                           onClick={() => setExpandedRecipe(null)}
                           className="absolute top-4 right-4 w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+                          aria-label="Close expanded recipe"
                         >
                           <X className="w-5 h-5" />
                         </button>
@@ -670,7 +677,7 @@ export default function HeroSection({
                         alt={recipe.name}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-cover image-grade transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover image-grade group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       <button
@@ -679,6 +686,7 @@ export default function HeroSection({
                           onToggleFavorite(normalizeScrapedRecipe(recipe, recipeData.source === 'scraped' ? 'scraped' : 'demo'));
                         }}
                         className="absolute top-3 left-3 w-8 h-8 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors z-10"
+                        aria-label={isFavorite(recipe.name) ? `Remove ${toTitleCase(recipe.name)} from favorites` : `Save ${toTitleCase(recipe.name)} to favorites`}
                       >
                         <Heart className={`w-4 h-4 ${isFavorite(recipe.name) ? 'fill-red-400 text-red-400' : ''}`} />
                       </button>

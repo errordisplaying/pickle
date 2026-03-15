@@ -29,6 +29,7 @@ export default function SmartSwapSection({
   const [communitySwaps, setCommunitySwaps] = useState<CommunitySwap[]>([]);
   const [showSuggestModal, setShowSuggestModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingSwaps, setLoadingSwaps] = useState(false);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Fetch community swaps on mount ────────────────────────────
@@ -37,6 +38,7 @@ export default function SmartSwapSection({
 
     const fetchCommunitySwaps = async () => {
       if (!supabase) return;
+      setLoadingSwaps(true);
       try {
         const { data, error } = await supabase
           .from('swap_suggestions')
@@ -50,6 +52,8 @@ export default function SmartSwapSection({
         }
       } catch {
         // Silently fail — community swaps are optional
+      } finally {
+        setLoadingSwaps(false);
       }
     };
 
@@ -158,12 +162,14 @@ export default function SmartSwapSection({
     <section ref={substituteRef} className="section-pinned z-30">
       <div className="absolute inset-0 bg-warm-white" />
 
+      <div className="relative flex flex-col gap-4 px-4 pt-20 pb-8 lg:contents">
+
       {/* Left - Header + Category Filters + Search + Image */}
-      <div className="substitute-image absolute left-[6vw] top-[14vh] w-[42vw] flex flex-col">
-        <h2 className="text-[clamp(2rem,4vw,3.5rem)] font-black lowercase text-[#1A1A1A] leading-none mb-3">
+      <div className="substitute-image relative w-full lg:absolute lg:left-[6vw] lg:top-[14vh] lg:w-[42vw] flex flex-col">
+        <h2 className="section-heading text-[clamp(2rem,4vw,3.5rem)] mb-3">
           Smart Swap
         </h2>
-        <p className="text-[#6E6A60] text-lg leading-relaxed mb-5 max-w-[36vw]">
+        <p className="text-[#6E6A60] text-base lg:text-lg leading-relaxed mb-5 max-w-full lg:max-w-[36vw]">
           Have dietary restrictions or just out of an ingredient? Select your need and we'll show you perfect swaps that keep flavor and texture intact.
         </p>
 
@@ -198,26 +204,27 @@ export default function SmartSwapSection({
             <button
               onClick={() => setSearchQuery('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6E6A60] hover:text-[#1A1A1A] transition-colors"
+              aria-label="Clear search"
             >
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {/* Image */}
-        <div className="h-[30vh] japandi-card">
+        {/* Image — hidden on mobile */}
+        <div className="hidden lg:block h-[30vh] japandi-card">
           <OptimizedImage src="/substitute_eggs_dairy.jpg" alt="Ingredients" className="w-full h-full image-grade" />
         </div>
       </div>
 
       {/* Swap Badge */}
-      <div className="substitute-badge absolute left-[10vw] bottom-[6vh] bg-[#C49A5C] text-white px-6 py-3 rounded-full font-semibold shadow-xl">
+      <div className="substitute-badge hidden lg:block lg:absolute lg:left-[10vw] lg:bottom-[6vh] bg-[#C49A5C] text-white px-6 py-3 rounded-full font-semibold shadow-xl">
         <Leaf className="w-4 h-4 inline mr-2" />
         {activeSwapCategory === 'all' ? 'All dietary swaps' : swapCategories.find(c => c.id === activeSwapCategory)?.label + ' swaps active'}
       </div>
 
       {/* Right - Swap Cards */}
-      <div className="substitute-text absolute left-[52vw] top-[14vh] w-[42vw] h-[76vh] overflow-y-auto pr-4 swap-scroll">
+      <div className="substitute-text relative w-full max-h-[60vh] lg:max-h-none lg:absolute lg:left-[52vw] lg:top-[14vh] lg:w-[42vw] lg:h-[76vh] overflow-y-auto pr-0 lg:pr-4 swap-scroll">
         {/* Results count + Suggest button */}
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm text-[#6E6A60] font-medium">{resultsLabel}</span>
@@ -241,8 +248,16 @@ export default function SmartSwapSection({
           )}
         </div>
 
+        {/* Loading state */}
+        {loadingSwaps && (
+          <div className="flex items-center justify-center py-8 gap-2 text-[#6E6A60]">
+            <Loader2 className="w-4 h-4 animate-spin text-[#C49A5C]" />
+            <span className="text-sm font-medium">Loading community swaps...</span>
+          </div>
+        )}
+
         {/* Swap cards or empty state */}
-        {filteredSwaps.length === 0 ? (
+        {!loadingSwaps && (filteredSwaps.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-16 h-16 bg-[#E8E6DC] rounded-full flex items-center justify-center mb-4">
               <Search className="w-7 h-7 text-[#C49A5C]" />
@@ -301,8 +316,10 @@ export default function SmartSwapSection({
               </div>
             ))}
           </div>
-        )}
+        ))}
       </div>
+
+      </div>{/* end mobile flex / lg:contents wrapper */}
 
       {/* Suggest Swap Modal (via portal to escape GSAP transforms) */}
       {showSuggestModal && createPortal(

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { X, Mail, Eye, EyeOff, CloudOff } from 'lucide-react';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 import type { AuthError } from '@supabase/supabase-js';
 
 interface AuthModalProps {
@@ -79,12 +80,14 @@ const AuthModal = ({ onClose, showToast }: AuthModalProps) => {
     setAuthError('');
   };
 
+  const trapRef = useFocusTrap(handleClose);
+
   return (
     <div className="fixed inset-0 z-[270] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
-      <div className="relative bg-[#F4F2EA] rounded-[28px] shadow-2xl w-full max-w-md p-8 overflow-hidden">
+      <div ref={trapRef} role="dialog" aria-modal="true" aria-label="Authentication" className="relative bg-[#F4F2EA] rounded-[28px] shadow-2xl w-full max-w-md p-8 overflow-hidden">
         {/* Close */}
-        <button onClick={handleClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#E8E6DC] flex items-center justify-center hover:bg-[#D5D3C9] transition-colors">
+        <button onClick={handleClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#E8E6DC] flex items-center justify-center hover:bg-[#DAD6CC] transition-colors" aria-label="Close authentication dialog">
           <X className="w-4 h-4 text-[#6E6A60]" />
         </button>
 

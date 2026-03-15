@@ -23,13 +23,15 @@ interface MacroConfig {
   step: number;
 }
 
+const TERRACOTTA_HEX = '#D4763C'; // mirrors --terracotta CSS variable; needed for inline alpha colors
+
 const MACROS: MacroConfig[] = [
   {
     field: 'calories',
     label: 'Calories',
     unit: 'kcal',
     icon: <Flame className="w-4 h-4" />,
-    color: '#D4763C',
+    color: TERRACOTTA_HEX,
     bgColor: '#D4763C20',
     min: 800,
     max: 4000,
@@ -85,15 +87,17 @@ export default function NutritionSection({ nutritionRef, nutritionGoals, onUpdat
     <section ref={nutritionRef} className="section-pinned z-50">
       <div className="absolute inset-0 bg-warm-white" />
 
+      <div className="relative flex flex-col gap-6 px-4 pt-20 pb-8 lg:contents">
+
       {/* Left Image Card */}
-      <div className="nutrition-image absolute left-[6vw] top-[14vh] w-[48vw] h-[72vh] japandi-card overflow-hidden">
+      <div className="nutrition-image relative w-full h-[40vh] lg:absolute lg:left-[6vw] lg:top-[14vh] lg:w-[48vw] lg:h-[72vh] japandi-card overflow-hidden">
         <OptimizedImage src="/nutrition_salmon_bowl.jpg" alt="Nutritious meal" className="w-full h-full image-grade" />
 
         {/* Floating calorie badge on the image */}
         <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-md rounded-2xl px-5 py-3 shadow-lg border border-white/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#D4763C20' }}>
-              <Flame className="w-5 h-5" style={{ color: '#D4763C' }} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${TERRACOTTA_HEX}20` }}>
+              <Flame className="w-5 h-5 text-terracotta" />
             </div>
             <div>
               <div className="text-2xl font-black text-[#1A1A1A] leading-none">{nutritionGoals.calories}</div>
@@ -104,13 +108,13 @@ export default function NutritionSection({ nutritionRef, nutritionGoals, onUpdat
       </div>
 
       {/* Right Nutrition Panel */}
-      <div className="nutrition-panel absolute left-[58vw] top-[14vh] w-[36vw]">
+      <div className="nutrition-panel relative w-full lg:absolute lg:left-[58vw] lg:top-[14vh] lg:w-[36vw]">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-[clamp(1.8rem,3.5vw,3rem)] font-black lowercase text-[#1A1A1A] leading-none mb-3">
-              Nutrition That<br />Adapts To You
+            <h2 className="section-heading text-[clamp(2rem,4vw,3.5rem)] mb-3">
+              nutrition that<br />adapts to you
             </h2>
-            <p className="text-[#6E6A60] text-base leading-relaxed max-w-[28vw]">
+            <p className="text-[#6E6A60] text-base leading-relaxed max-w-full lg:max-w-[28vw]">
               Drag the sliders to set your daily goals. We'll suggest recipes that match your targets.
             </p>
           </div>
@@ -221,7 +225,7 @@ export default function NutritionSection({ nutritionRef, nutritionGoals, onUpdat
             {nutritionSpecialists.slice(0, 2).map((specialist) => (
               <div
                 key={specialist.id}
-                className="group relative bg-white rounded-2xl border border-[#E8E6DC] p-4 hover:shadow-lg hover:border-[#D4763C]/30 transition-all duration-300 cursor-pointer"
+                className="group relative bg-white rounded-2xl border border-[#E8E6DC] p-4 hover:shadow-lg hover:border-[var(--terracotta)]/30 transition-all duration-300 cursor-pointer"
                 onClick={() => {
                   trackEvent(EVENTS.SPECIALIST_VIEWED, {
                     specialistId: specialist.id,
@@ -244,7 +248,7 @@ export default function NutritionSection({ nutritionRef, nutritionGoals, onUpdat
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="font-semibold text-[#1A1A1A] text-sm truncate">{specialist.name}</span>
                       {specialist.featured && (
-                        <span className="px-1.5 py-0.5 bg-[#D4763C]/10 text-[#D4763C] text-[10px] font-bold rounded-md uppercase tracking-wide flex-shrink-0">
+                        <span className="px-1.5 py-0.5 bg-[var(--terracotta)]/10 text-terracotta text-[10px] font-bold rounded-md uppercase tracking-wide flex-shrink-0">
                           Featured
                         </span>
                       )}
@@ -266,7 +270,7 @@ export default function NutritionSection({ nutritionRef, nutritionGoals, onUpdat
                     {/* Rating + Price Row */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
-                        <Star className="w-3.5 h-3.5 fill-[#D4763C] text-[#D4763C]" />
+                        <Star className="w-3.5 h-3.5 fill-[var(--terracotta)] text-terracotta" />
                         <span className="text-xs font-semibold text-[#1A1A1A]">{specialist.rating}</span>
                         <span className="text-[10px] text-[#6E6A60]">({specialist.reviewCount})</span>
                       </div>
@@ -289,7 +293,7 @@ export default function NutritionSection({ nutritionRef, nutritionGoals, onUpdat
                       price: specialist.pricePerSession,
                     });
                   }}
-                  className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-[#D4763C]/10 text-[#D4763C] text-sm font-semibold hover:bg-[#D4763C] hover:text-white transition-all duration-200 cursor-pointer"
+                  className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-[var(--terracotta)]/10 text-terracotta text-sm font-semibold hover:bg-terracotta hover:text-white transition-all duration-200 cursor-pointer"
                 >
                   Book Consultation
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -299,6 +303,8 @@ export default function NutritionSection({ nutritionRef, nutritionGoals, onUpdat
           </div>
         </div>
       </div>
+
+      </div>{/* end mobile flex / lg:contents wrapper */}
     </section>
   );
 }

@@ -75,10 +75,10 @@ export default function Navbar({
           <button onClick={() => setMode('testKitchen')} className={`text-sm font-medium transition-colors ${mode === 'testKitchen' ? 'text-[#C49A5C]' : 'text-[#6E6A60] hover:text-[#1A1A1A]'}`}>
             Test Kitchen
           </button>
-          <button data-tour="planner" onClick={() => onOpenPlanner()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors">
+          <button data-tour="planner" onClick={() => onOpenPlanner()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors" aria-label="Open meal planner">
             <Calendar className="w-5 h-5" />
           </button>
-          <button onClick={() => onOpenShoppingList()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors relative">
+          <button onClick={() => onOpenShoppingList()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors relative" aria-label="Open shopping list">
             <ShoppingCart className="w-5 h-5" />
             {shoppingList.filter(i => !i.purchased).length > 0 && (
               <span className="absolute -top-1 -right-2 w-4 h-4 bg-[#C49A5C] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
@@ -86,7 +86,7 @@ export default function Navbar({
               </span>
             )}
           </button>
-          <button data-tour="favorites" onClick={() => onOpenFavorites()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors relative">
+          <button data-tour="favorites" onClick={() => onOpenFavorites()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors relative" aria-label={`Favorites${favorites.length > 0 ? ` (${favorites.length})` : ''}`}>
             <Heart className={`w-5 h-5 ${favorites.length > 0 ? 'fill-red-400 text-red-400' : ''}`} />
             {favorites.length > 0 && (
               <span className="absolute -top-1 -right-2 w-4 h-4 bg-red-400 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
@@ -94,13 +94,14 @@ export default function Navbar({
               </span>
             )}
           </button>
-          <button onClick={() => onOpenGoalsSettings()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors">
+          <button onClick={() => onOpenGoalsSettings()} className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors" aria-label="Nutrition goals settings">
             <Target className="w-5 h-5" />
           </button>
           {session?.user ? (
             <div className="relative group">
               <button
                 className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#C49A5C] hover:border-[#8B6F3C] transition-colors flex items-center justify-center bg-[#C49A5C] text-white text-xs font-bold"
+                aria-label="User account menu"
               >
                 {userProfile?.avatar_url ? (
                   <img src={userProfile.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -135,6 +136,7 @@ export default function Navbar({
             <button
               onClick={() => onOpenAuth()}
               className="text-sm font-medium text-[#6E6A60] hover:text-[#1A1A1A] transition-colors relative"
+              aria-label="Sign in"
             >
               <User className="w-5 h-5" />
               {!isSupabaseConfigured() && (

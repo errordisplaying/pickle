@@ -22,7 +22,7 @@ export default function CtaSection({ ctaRef, onStartCooking }: CtaSectionProps) 
           </div>
 
           <div className="text-center">
-            <h2 className="text-[clamp(2.5rem,5vw,4rem)] font-black lowercase text-[#1A1A1A] leading-none mb-4">
+            <h2 className="section-heading text-[clamp(2.2rem,4.5vw,3.75rem)] mb-4">
               start cooking today
             </h2>
             <div className="flex items-center justify-center gap-3 mb-6">

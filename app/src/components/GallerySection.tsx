@@ -30,9 +30,11 @@ export default function GallerySection({ galleryRef, recipes, onToggleFavorite, 
     <section ref={galleryRef} className="section-pinned z-20">
       <div className="absolute inset-0 bg-warm-white" />
 
+      <div className="relative flex flex-col gap-4 px-4 pt-20 pb-8 lg:contents">
+
       {/* Header */}
-      <div className="gallery-text absolute left-[6vw] top-[12vh] z-10">
-        <h2 className="text-[clamp(2rem,4vw,3.5rem)] font-black lowercase text-[#1A1A1A] leading-none mb-3">
+      <div className="gallery-text relative lg:absolute lg:left-[6vw] lg:top-[12vh] z-10">
+        <h2 className="section-heading text-[clamp(2rem,4vw,3.5rem)] mb-3">
           recipes for you
         </h2>
         <p className="text-[#6E6A60] text-lg leading-relaxed max-w-xl">
@@ -41,8 +43,18 @@ export default function GallerySection({ galleryRef, recipes, onToggleFavorite, 
       </div>
 
       {/* Horizontal Scrolling Card Slider */}
-      <div className="gallery-cards absolute left-0 right-0 top-[30vh] bottom-[6vh] overflow-x-auto overflow-y-hidden px-[6vw] recipe-slider">
+      <div className="gallery-cards relative h-[60vh] lg:absolute lg:left-0 lg:right-0 lg:top-[30vh] lg:bottom-[6vh] lg:h-auto overflow-x-auto overflow-y-hidden px-0 lg:px-[6vw] recipe-slider snap-slider">
         <div className="flex gap-5 h-full w-max py-2">
+          {/* Skeleton cards while recipes load */}
+          {recipes.length === 0 && Array.from({ length: 4 }).map((_, i) => (
+            <div key={`skel-${i}`} className="w-[260px] h-full flex-shrink-0 rounded-[28px] overflow-hidden bg-[#E8E6DC]">
+              <div className="h-[60%] shimmer-placeholder" />
+              <div className="p-4 space-y-3">
+                <div className="h-4 w-3/4 rounded shimmer-placeholder" />
+                <div className="h-3 w-1/2 rounded shimmer-placeholder" />
+              </div>
+            </div>
+          ))}
           {recipes.map((scored, idx) => {
             const recipe = scored.recipe;
             const normalized = scored.normalized;
@@ -53,13 +65,18 @@ export default function GallerySection({ galleryRef, recipes, onToggleFavorite, 
               <div
                 key={idx}
                 onClick={() => onOpenRecipe(normalized)}
-                className="gallery-card group relative w-[260px] h-full flex-shrink-0 rounded-[28px] overflow-hidden cursor-pointer shadow-lg card-hover"
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenRecipe(normalized); } }}
+                role="button"
+                tabIndex={0}
+                aria-label={`View recipe: ${toTitleCase(recipe.name)}`}
+                className="gallery-card group relative w-[260px] h-full flex-shrink-0 rounded-[28px] overflow-hidden cursor-pointer shadow-lg card-hover animate-card-stagger"
+                style={{ animationDelay: `${idx * 80}ms` }}
               >
                 {/* Hero Image */}
                 <OptimizedImage
                   src={recipe.image}
                   alt={recipe.name}
-                  className="absolute inset-0 w-full h-full image-grade transition-transform duration-500 group-hover:scale-105"
+                  className="absolute inset-0 w-full h-full image-grade group-hover:scale-105"
                 />
 
                 {/* Gradient overlay — always visible */}
@@ -78,6 +95,7 @@ export default function GallerySection({ galleryRef, recipes, onToggleFavorite, 
                     onToggleFavorite(normalized);
                   }}
                   className="absolute top-3 right-3 w-8 h-8 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-all z-10"
+                  aria-label={isFavorite(recipe.name) ? `Remove ${toTitleCase(recipe.name)} from favorites` : `Save ${toTitleCase(recipe.name)} to favorites`}
                 >
                   <Heart className={`w-4 h-4 ${isFavorite(recipe.name) ? 'fill-red-400 text-red-400' : ''}`} />
                 </button>
@@ -116,6 +134,8 @@ export default function GallerySection({ galleryRef, recipes, onToggleFavorite, 
           })}
         </div>
       </div>
+
+      </div>{/* end mobile flex / lg:contents wrapper */}
     </section>
   );
 }

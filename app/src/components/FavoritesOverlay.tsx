@@ -1,8 +1,12 @@
-import { X, Calendar, Clock, Heart, Flame, Star, MessageSquare } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { X, Calendar, Clock, Heart, Flame, Star, MessageSquare, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { SavedRecipe } from '@/types';
+import { STORAGE_KEYS } from '@/constants';
+import { cookingTips } from '@/data';
 import { toTitleCase } from '@/utils';
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 
 interface FavoritesOverlayProps {
   favorites: SavedRecipe[];
@@ -12,22 +16,37 @@ interface FavoritesOverlayProps {
 }
 
 export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToPlanner, onClose }: FavoritesOverlayProps) {
+  const [closing, setClosing] = useState(false);
+  const handleClose = useCallback(() => {
+    setClosing(true);
+    setTimeout(onClose, 250);
+  }, [onClose]);
+
+  const [tipIndex] = useState(() => {
+    const stored = parseInt(localStorage.getItem(STORAGE_KEYS.TIP_INDEX) || '0', 10);
+    const next = (stored + 1) % cookingTips.length;
+    localStorage.setItem(STORAGE_KEYS.TIP_INDEX, String(next));
+    return stored;
+  });
+  const currentTip = cookingTips[tipIndex];
+
   useBodyScrollLock();
+  const trapRef = useFocusTrap(handleClose);
   return (
-    <div className="fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[201] flex flex-col overflow-y-auto animate-overlay-in">
+    <div ref={trapRef} role="dialog" aria-modal="true" aria-label="Saved recipes" className={`fixed inset-0 bg-[#F4F2EA]/98 backdrop-blur-sm z-[201] flex flex-col overflow-y-auto ${closing ? 'animate-overlay-out' : 'animate-overlay-in'}`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 sm:px-8 py-5 border-b border-black/5">
+      <div className="flex items-center justify-between px-5 sm:px-8 py-5 border-b border-black/5">
         <div className="flex items-center gap-3">
           <Heart className="w-6 h-6 text-red-400 fill-red-400" />
-          <h2 className="text-2xl font-black uppercase text-[#1A1A1A]">Saved Recipes</h2>
+          <h2 className="text-2xl font-black lowercase text-[#1A1A1A]">saved recipes</h2>
           <span className="text-sm text-[#6E6A60]">({favorites.length})</span>
         </div>
-        <Button onClick={onClose} variant="outline" className="rounded-full h-10 w-10 p-0 flex items-center justify-center">
+        <Button onClick={handleClose} variant="outline" className="rounded-full h-10 w-10 p-0 flex items-center justify-center" aria-label="Close favorites">
           <X className="w-5 h-5" />
         </Button>
       </div>
 
-      <div className="flex-1 px-4 sm:px-8 py-6">
+      <div className="flex-1 px-5 sm:px-8 py-6">
         <div className="max-w-7xl mx-auto">
           {favorites.length === 0 ? (
             <div className="text-center py-20 max-w-md mx-auto">
@@ -44,6 +63,19 @@ export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToP
               <p className="text-[#6E6A60] text-sm leading-relaxed">
                 Tap the <Heart className="w-3.5 h-3.5 inline text-red-400 fill-red-400 -mt-0.5" /> on any recipe to save it here for easy access later.
               </p>
+
+              {/* Rotating cooking tip */}
+              <div className="mt-8 bg-[#F4F2EA] rounded-2xl p-4 max-w-sm mx-auto border border-[#E8E6DC]">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-[#C49A5C]/10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Lightbulb className="w-4 h-4 text-[#C49A5C]" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#1A1A1A] mb-0.5">{currentTip.title}</p>
+                    <p className="text-xs text-[#6E6A60] leading-relaxed">{currentTip.description}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -114,7 +146,7 @@ export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToP
                         className="flex-1 bg-[#C49A5C] text-white rounded-full text-xs hover:bg-[#8B6F3C] btn-press"
                         size="sm"
                       >
-                        <Calendar className="w-3 h-3 mr-1" /> Add to Plan
+                        <Calendar className="w-3 h-3 mr-1" /> Add to Planner
                       </Button>
                       <Button
                         onClick={() => onRemoveFavorite(recipe.id)}

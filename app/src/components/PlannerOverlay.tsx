@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Calendar, X, Plus, ExternalLink, Share2, Trash2,
-  BookOpen, Search, UtensilsCrossed, Clock, Flame, Sparkles
+  BookOpen, Search, UtensilsCrossed, Clock, Flame, Sparkles, Lightbulb
 } from 'lucide-react';
 import {
   DndContext, DragOverlay, PointerSensor, TouchSensor,
@@ -9,9 +9,12 @@ import {
 } from '@dnd-kit/core';
 import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core';
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
+import { useFocusTrap } from '@/hooks/use-focus-trap';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { SavedRecipe, PlannerWeek, NutritionGoals } from '@/types';
+import { STORAGE_KEYS } from '@/constants';
+import { cookingTips } from '@/data';
 import {
   toTitleCase,
   getDayNutrition, getWeeklyNutrition,
@@ -43,9 +46,9 @@ interface PlannerOverlayProps {
 }
 
 const MEAL_META = {
-  breakfast: { label: 'Breakfast', emoji: '☀️', accent: 'bg-amber-50 text-amber-600', ring: 'ring-amber-200' },
-  lunch: { label: 'Lunch', emoji: '🥗', accent: 'bg-emerald-50 text-emerald-600', ring: 'ring-emerald-200' },
-  dinner: { label: 'Dinner', emoji: '🍽️', accent: 'bg-violet-50 text-violet-600', ring: 'ring-violet-200' },
+  breakfast: { label: 'Breakfast', emoji: '☀️', accent: 'bg-[#FFF8F0] text-[#C49A5C]', ring: 'ring-[#E8D5B8]' },
+  lunch: { label: 'Lunch', emoji: '🥗', accent: 'bg-[#F4F8F0] text-[#8B9E6B]', ring: 'ring-[#C8D4B8]' },
+  dinner: { label: 'Dinner', emoji: '🍽️', accent: 'bg-[#F5F0F4] text-[#9E7D8B]', ring: 'ring-[#D4C0CC]' },
 } as const;
 
 export default function PlannerOverlay({
@@ -66,12 +69,27 @@ export default function PlannerOverlay({
   onOpenAiPlanModal,
   onClose,
 }: PlannerOverlayProps) {
+  const [closing, setClosing] = useState(false);
+  const handleClose = useCallback(() => {
+    setClosing(true);
+    setTimeout(onClose, 250);
+  }, [onClose]);
+
   useBodyScrollLock();
+  const trapRef = useFocusTrap(handleClose);
   const [plannerSidebarTab, setPlannerSidebarTab] = useState<'saved' | 'recent' | 'browse'>('saved');
   const [plannerSearchQuery, setPlannerSearchQuery] = useState('');
   const [plannerSidebarOpen, setPlannerSidebarOpen] = useState(false);
   const [browseTag, setBrowseTag] = useState<string>('All');
   const [activeRecipe, setActiveRecipe] = useState<SavedRecipe | null>(null);
+
+  const [tipIndex] = useState(() => {
+    const stored = parseInt(localStorage.getItem(STORAGE_KEYS.TIP_INDEX) || '0', 10);
+    const next = (stored + 1) % cookingTips.length;
+    localStorage.setItem(STORAGE_KEYS.TIP_INDEX, String(next));
+    return stored;
+  });
+  const currentTip = cookingTips[tipIndex];
 
   const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 8 } });
   const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } });
@@ -121,9 +139,9 @@ export default function PlannerOverlay({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-    <div className="fixed inset-0 bg-[#F7F3EB]/98 backdrop-blur-sm z-[200] flex flex-col overflow-hidden animate-overlay-in">
+    <div ref={trapRef} role="dialog" aria-modal="true" aria-label="Meal planner" className={`fixed inset-0 bg-[#F7F3EB]/98 backdrop-blur-sm z-[200] flex flex-col overflow-hidden ${closing ? 'animate-overlay-out' : 'animate-overlay-in'}`}>
       {/* ── Header ── */}
-      <div className="flex items-center justify-between px-6 lg:px-8 py-5 border-b border-[#E8E6DC] flex-shrink-0 bg-white/60 backdrop-blur-md">
+      <div className="flex items-center justify-between px-5 sm:px-8 py-5 border-b border-[#E8E6DC] flex-shrink-0 bg-white/60 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[#C49A5C]/10 rounded-2xl flex items-center justify-center">
             <Calendar className="w-5 h-5 text-[#C49A5C]" />
@@ -147,8 +165,9 @@ export default function PlannerOverlay({
             <Trash2 className="w-3.5 h-3.5" /> Clear
           </Button>
           <button
-            onClick={() => { onClose(); setRecipeToAssign(null); setPlannerSearchQuery(''); setPlannerSidebarOpen(false); }}
+            onClick={() => { handleClose(); setRecipeToAssign(null); setPlannerSearchQuery(''); setPlannerSidebarOpen(false); }}
             className="w-9 h-9 rounded-full bg-[#F4F2EA] flex items-center justify-center text-[#6E6A60] hover:bg-[#E8E6DC] transition-colors"
+            aria-label="Close planner"
           >
             <X className="w-4 h-4" />
           </button>
@@ -176,7 +195,7 @@ export default function PlannerOverlay({
                 <BookOpen className="w-4 h-4 text-[#C49A5C]" />
                 <h3 className="font-bold text-sm text-[#1A1A1A] lowercase">recipe library</h3>
               </div>
-              <button onClick={() => setPlannerSidebarOpen(false)} className="lg:hidden w-7 h-7 rounded-full bg-[#F4F2EA] flex items-center justify-center">
+              <button onClick={() => setPlannerSidebarOpen(false)} className="lg:hidden w-7 h-7 rounded-full bg-[#F4F2EA] flex items-center justify-center" aria-label="Close recipe library sidebar">
                 <X className="w-3.5 h-3.5 text-[#6E6A60]" />
               </button>
             </div>
@@ -242,6 +261,19 @@ export default function PlannerOverlay({
                        plannerSidebarTab === 'saved' ? 'No saved recipes yet' :
                        plannerSidebarTab === 'recent' ? 'No recent recipes' : 'Browse our collection'}
                     </p>
+
+                    {/* Rotating cooking tip */}
+                    <div className="mt-6 bg-[#F4F2EA] rounded-2xl p-3 max-w-[240px] mx-auto border border-[#E8E6DC]">
+                      <div className="flex items-start gap-2">
+                        <div className="w-7 h-7 bg-[#C49A5C]/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Lightbulb className="w-3.5 h-3.5 text-[#C49A5C]" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-bold text-[#1A1A1A] mb-0.5">{currentTip.title}</p>
+                          <p className="text-[11px] text-[#6E6A60] leading-relaxed">{currentTip.description}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 );
               }
