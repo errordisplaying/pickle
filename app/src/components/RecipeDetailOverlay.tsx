@@ -4,6 +4,7 @@ import { toTitleCase } from '@/utils';
 import type { SavedRecipe, Toast } from '@/types';
 import ShareCardModal from './ShareCardModal';
 import { useFocusTrap } from '@/hooks/use-focus-trap';
+import OptimizedImage from '@/components/OptimizedImage';
 
 interface RecipeDetailOverlayProps {
   recipe: SavedRecipe;
@@ -117,13 +118,7 @@ export default function RecipeDetailOverlay({
         <div className="overflow-y-auto max-h-[90vh] recipe-slider">
           {/* Hero Image */}
           <div className="relative h-[36vh] min-h-[260px]">
-            <img
-              src={recipe.image}
-              alt={recipe.name}
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover"
-            />
+            <OptimizedImage src={recipe.image} alt={recipe.name} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
 
             {/* Close button */}

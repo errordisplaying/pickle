@@ -5,6 +5,7 @@ import type { SavedRecipe } from '@/types';
 import { STORAGE_KEYS } from '@/constants';
 import { cookingTips } from '@/data';
 import { toTitleCase } from '@/utils';
+import OptimizedImage from '@/components/OptimizedImage';
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
 import { useFocusTrap } from '@/hooks/use-focus-trap';
 
@@ -59,7 +60,7 @@ export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToP
                   <path d="M64 46 C64 40, 56 37, 56 43 C56 49, 64 54, 64 54 C64 54, 72 49, 72 43 C72 37, 64 40, 64 46Z" fill="#C49A5C" opacity="0.5" className="animate-float" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-[#1A1A1A] mb-2">your recipe box is empty</h3>
+              <h3 className="text-xl font-bold text-[#1A1A1A] mb-2 font-handwritten text-2xl">your recipe box is empty</h3>
               <p className="text-[#6E6A60] text-sm leading-relaxed">
                 Tap the <Heart className="w-3.5 h-3.5 inline text-red-400 fill-red-400 -mt-0.5" /> on any recipe to save it here for easy access later.
               </p>
@@ -82,7 +83,7 @@ export default function FavoritesOverlay({ favorites, onRemoveFavorite, onAddToP
               {favorites.map((recipe) => (
                 <div key={recipe.id} className="bg-white rounded-[24px] overflow-hidden shadow-lg group card-hover">
                   <div className="relative h-44 overflow-hidden">
-                    <img src={recipe.image} alt={recipe.name} className="w-full h-full object-cover image-grade" />
+                    <OptimizedImage src={recipe.image} alt={recipe.name} className="w-full h-full object-cover image-grade" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     <button
                       onClick={() => onRemoveFavorite(recipe.id)}

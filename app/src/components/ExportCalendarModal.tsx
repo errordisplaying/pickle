@@ -46,7 +46,7 @@ const ExportCalendarModal = ({ plannerMeals, onClose }: ExportCalendarModalProps
                         className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-[#F4F2EA] transition-colors border border-transparent hover:border-black/5 group"
                       >
                         {recipe.image && (
-                          <img src={recipe.image} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+                          <img src={recipe.image} alt="" loading="lazy" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-[#1A1A1A] truncate">{toTitleCase(recipe.name)}</p>

@@ -9,11 +9,19 @@ interface CommunitySectionProps {
 export default function CommunitySection({ communityRef }: CommunitySectionProps) {
   return (
     <section ref={communityRef} className="section-flowing bg-warm-white py-20 px-[6vw] z-[60]">
+      {/* Organic divider */}
+      <div className="flex justify-center mb-8">
+        <svg width="120" height="24" viewBox="0 0 120 24" fill="none" className="text-[#C49A5C] opacity-20">
+          <path d="M10 12 Q30 4, 60 12 Q90 20, 110 12" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+          <ellipse cx="60" cy="12" rx="4" ry="6" fill="currentColor" opacity="0.3" />
+        </svg>
+      </div>
+
       <div className="text-center max-w-2xl mx-auto mb-12">
         <h2 className="section-heading text-[clamp(2rem,4vw,3.5rem)] mb-4">
           made by the community
         </h2>
-        <p className="text-[#6E6A60] text-lg">
+        <p className="text-[#6E6A60] text-lg font-handwritten text-xl">
           Save, remix, and share your own spins.
         </p>
       </div>
@@ -22,7 +30,8 @@ export default function CommunitySection({ communityRef }: CommunitySectionProps
         {communityRecipes.map((recipe, idx) => (
           <div
             key={idx}
-            className="group japandi-card bg-white cursor-pointer card-hover"
+            className="group japandi-card bg-white cursor-pointer card-hover animate-card-stagger"
+            style={{ animationDelay: `${idx * 100}ms` }}
           >
             <div className="relative h-64 overflow-hidden rounded-[28px]">
               <OptimizedImage

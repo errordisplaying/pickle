@@ -216,24 +216,22 @@ function App() {
     return positions;
   };
 
-  // Update next-section label on scroll
+  // Update next-section label on scroll (rAF-throttled)
   useEffect(() => {
+    let rafId = 0;
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const positions = getSectionPositions();
-
-      // Find the next section that's at least 100px below current scroll
-      const next = positions.find(p => p.top > scrollY + 100);
-      if (next) {
-        setNextSectionLabel(next.name);
-      } else {
-        setNextSectionLabel('Back to Top');
-      }
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        const positions = getSectionPositions();
+        const next = positions.find(p => p.top > scrollY + 100);
+        setNextSectionLabel(next ? next.name : 'Back to Top');
+      });
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // initialize
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => { window.removeEventListener('scroll', handleScroll); cancelAnimationFrame(rafId); };
   }, []);
 
   const scrollToNextSection = () => {
@@ -450,12 +448,17 @@ function App() {
     return () => mm.revert();
   }, []);
 
-  // ── localStorage Persistence ──────────────────────────────────
-  useEffect(() => { saveToStorage(STORAGE_KEYS.FAVORITES, favorites); }, [favorites]);
-  useEffect(() => { saveToStorage(STORAGE_KEYS.PLANNER, plannerMeals); }, [plannerMeals]);
-  useEffect(() => { saveToStorage(STORAGE_KEYS.RECENT_RECIPES, recentRecipes); }, [recentRecipes]);
-  useEffect(() => { saveToStorage(STORAGE_KEYS.NUTRITION_GOALS, nutritionGoals); }, [nutritionGoals]);
-  useEffect(() => { saveToStorage(STORAGE_KEYS.SHOPPING_LIST, shoppingList); }, [shoppingList]);
+  // ── localStorage Persistence (debounced batch save) ──────────
+  useEffect(() => {
+    const id = setTimeout(() => {
+      saveToStorage(STORAGE_KEYS.FAVORITES, favorites);
+      saveToStorage(STORAGE_KEYS.PLANNER, plannerMeals);
+      saveToStorage(STORAGE_KEYS.RECENT_RECIPES, recentRecipes);
+      saveToStorage(STORAGE_KEYS.NUTRITION_GOALS, nutritionGoals);
+      saveToStorage(STORAGE_KEYS.SHOPPING_LIST, shoppingList);
+    }, 300);
+    return () => clearTimeout(id);
+  }, [favorites, plannerMeals, recentRecipes, nutritionGoals, shoppingList]);
   useEffect(() => {
     if (servingMultiplier !== 1) {
       trackEvent(EVENTS.SERVING_SIZE_CHANGED, { multiplier: servingMultiplier });
@@ -617,28 +620,38 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id]);
 
-  // ── Favorites Helpers ────────────────────────────────────────
-  const isFavorite = (recipeName: string): boolean =>
-    favorites.some(f => f.name.toLowerCase() === recipeName.toLowerCase());
+  // ── Toast Notifications ─────────────────────────────────────────
+  const showToast = useCallback((message: string, type: Toast['type'] = 'success') => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    setToasts(prev => [...prev, { id, message, type, timestamp: Date.now() }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3000);
+  }, []);
 
-  const toggleFavorite = (recipe: SavedRecipe) => {
-    const exists = favorites.some(f => f.name.toLowerCase() === recipe.name.toLowerCase());
-    trackEvent(exists ? EVENTS.RECIPE_UNFAVORITED : EVENTS.RECIPE_FAVORITED, {
-      recipeName: recipe.name, tags: recipe.tags, calories: recipe.nutrition.calories, difficulty: recipe.difficulty,
-    });
+  // ── Favorites Helpers ────────────────────────────────────────
+  const isFavorite = useCallback((recipeName: string): boolean =>
+    favorites.some(f => f.name.toLowerCase() === recipeName.toLowerCase()),
+  [favorites]);
+
+  const toggleFavorite = useCallback((recipe: SavedRecipe) => {
     setFavorites(prev => {
+      const exists = prev.some(f => f.name.toLowerCase() === recipe.name.toLowerCase());
+      trackEvent(exists ? EVENTS.RECIPE_UNFAVORITED : EVENTS.RECIPE_FAVORITED, {
+        recipeName: recipe.name, tags: recipe.tags, calories: recipe.nutrition.calories, difficulty: recipe.difficulty,
+      });
+      showToast(exists ? 'Removed from favorites' : 'Recipe saved!', exists ? 'info' : 'success');
       if (exists) return prev.filter(f => f.name.toLowerCase() !== recipe.name.toLowerCase());
       return [...prev, { ...recipe, savedAt: Date.now() }];
     });
-    showToast(exists ? 'Removed from favorites' : 'Recipe saved!', exists ? 'info' : 'success');
-  };
+  }, [showToast]);
 
-  const removeFavorite = (recipeId: string) => {
+  const removeFavorite = useCallback((recipeId: string) => {
     setFavorites(prev => prev.filter(f => f.id !== recipeId));
     showToast('Recipe removed', 'info');
-  };
+  }, [showToast]);
 
-  const updateRecipeMeta = (recipeName: string, updates: { rating?: number; personalNotes?: string }) => {
+  const updateRecipeMeta = useCallback((recipeName: string, updates: { rating?: number; personalNotes?: string }) => {
     setFavorites(prev =>
       prev.map(f =>
         f.name.toLowerCase() === recipeName.toLowerCase()
@@ -646,10 +659,10 @@ function App() {
           : f
       )
     );
-  };
+  }, []);
 
   // ── Planner Helpers ──────────────────────────────────────────
-  const addRecipeToPlanner = (recipe: SavedRecipe, day: string, slot: 'breakfast' | 'lunch' | 'dinner') => {
+  const addRecipeToPlanner = useCallback((recipe: SavedRecipe, day: string, slot: 'breakfast' | 'lunch' | 'dinner') => {
     trackEvent(EVENTS.RECIPE_ADDED_TO_PLANNER, { recipeName: recipe.name, day, slot, tags: recipe.tags });
     setPlannerMeals(prev => ({
       ...prev,
@@ -657,31 +670,31 @@ function App() {
     }));
     setRecipeToAssign(null);
     showToast(`Added to ${day}'s ${slot}`, 'success');
-  };
+  }, [showToast]);
 
-  const removeFromPlanner = (day: string, slot: 'breakfast' | 'lunch' | 'dinner') => {
+  const removeFromPlanner = useCallback((day: string, slot: 'breakfast' | 'lunch' | 'dinner') => {
     trackEvent(EVENTS.RECIPE_REMOVED_FROM_PLANNER, { day, slot });
     setPlannerMeals(prev => ({
       ...prev,
       [day]: { ...prev[day], [slot]: null }
     }));
     showToast('Meal removed', 'info');
-  };
+  }, [showToast]);
 
-  const clearPlannerDay = (day: string) => {
+  const clearPlannerDay = useCallback((day: string) => {
     trackEvent(EVENTS.PLANNER_DAY_CLEARED, { day });
     setPlannerMeals(prev => ({
       ...prev,
       [day]: { breakfast: null, lunch: null, dinner: null }
     }));
     showToast(`${day} cleared`, 'info');
-  };
+  }, [showToast]);
 
-  const clearPlannerWeek = () => {
+  const clearPlannerWeek = useCallback(() => {
     trackEvent(EVENTS.PLANNER_WEEK_CLEARED);
     setPlannerMeals({ ...defaultPlannerWeek });
     showToast('Week cleared', 'info');
-  };
+  }, [showToast]);
 
   const applyAiMealPlan = (plan: Record<string, { breakfast: string | null; lunch: string | null; dinner: string | null }>) => {
     // Build lookup map of all available recipes by lowercase name
@@ -726,25 +739,16 @@ function App() {
     setOnboardingActive(false);
   };
 
-  // ── Toast Notifications ─────────────────────────────────────────
-  const showToast = (message: string, type: Toast['type'] = 'success') => {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    setToasts(prev => [...prev, { id, message, type, timestamp: Date.now() }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 3000);
-  };
-
   // ── Dietary Filter Toggle ──────────────────────────────────────
-  const toggleDietaryFilter = (filter: DietaryFilter) => {
-    const isActive = activeDietaryFilters.includes(filter);
-    trackEvent(EVENTS.DIETARY_FILTER_TOGGLED, { filter, active: !isActive });
-    setActiveDietaryFilters(prev =>
-      isActive ? prev.filter(f => f !== filter) : [...prev, filter]
-    );
-  };
+  const toggleDietaryFilter = useCallback((filter: DietaryFilter) => {
+    setActiveDietaryFilters(prev => {
+      const isActive = prev.includes(filter);
+      trackEvent(EVENTS.DIETARY_FILTER_TOGGLED, { filter, active: !isActive });
+      return isActive ? prev.filter(f => f !== filter) : [...prev, filter];
+    });
+  }, []);
 
-  const shareRecipe = async (recipe: any) => {
+  const shareRecipe = useCallback(async (recipe: any) => {
     trackEvent(EVENTS.RECIPE_SHARED, { recipeName: recipe.name });
     const text = formatRecipeShareText(recipe);
     if (navigator.share) {
@@ -761,9 +765,9 @@ function App() {
       await navigator.clipboard.writeText(text);
       showToast('Copied to clipboard!', 'success');
     }
-  };
+  }, [showToast]);
 
-  const shareMealPlan = async () => {
+  const shareMealPlan = useCallback(async () => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const lines: string[] = ['\u{1F37D}\uFE0F My Meal Plan — chickpea', ''];
     days.forEach(day => {
@@ -789,34 +793,36 @@ function App() {
     trackEvent(EVENTS.MEAL_PLAN_SHARED, { daysPlanned });
     await navigator.clipboard.writeText(lines.join('\n'));
     showToast('Meal plan copied to clipboard!', 'success');
-  };
+  }, [plannerMeals, showToast]);
 
-  const generateShoppingList = () => {
+  const generateShoppingList = useCallback(() => {
     const extracted = extractIngredientsFromPlanner(plannerMeals);
     trackEvent(EVENTS.SHOPPING_LIST_GENERATED, { itemCount: extracted.length });
     setShoppingList(extracted);
     showToast(`Generated ${extracted.length} items from your meal plan`, 'success');
-  };
+  }, [plannerMeals, showToast]);
 
-  const toggleShoppingItem = (itemId: string) => {
-    const item = shoppingList.find(i => i.id === itemId);
-    if (item) {
-      trackEvent(EVENTS.SHOPPING_ITEM_CHECKED, { itemName: item.name, category: item.category });
-    }
+  const toggleShoppingItem = useCallback((itemId: string) => {
     setShoppingList(prev =>
-      prev.map(i => i.id === itemId ? { ...i, purchased: !i.purchased } : i)
+      prev.map(i => {
+        if (i.id === itemId) {
+          trackEvent(EVENTS.SHOPPING_ITEM_CHECKED, { itemName: i.name, category: i.category });
+          return { ...i, purchased: !i.purchased };
+        }
+        return i;
+      })
     );
-  };
+  }, []);
 
-  const clearPurchasedItems = () => {
+  const clearPurchasedItems = useCallback(() => {
     setShoppingList(prev => prev.filter(item => !item.purchased));
     showToast('Purchased items cleared', 'info');
-  };
+  }, [showToast]);
 
-  const clearShoppingList = () => {
+  const clearShoppingList = useCallback(() => {
     setShoppingList([]);
     showToast('Shopping list cleared', 'info');
-  };
+  }, [showToast]);
 
   // Recipe Finder Functions
   const getDemoRecipes = (ingredientList: string) => {

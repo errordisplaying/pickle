@@ -104,7 +104,7 @@ export default function Navbar({
                 aria-label="User account menu"
               >
                 {userProfile?.avatar_url ? (
-                  <img src={userProfile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  <img src={userProfile.avatar_url} alt="" loading="lazy" className="w-full h-full object-cover" />
                 ) : (
                   (userProfile?.display_name || session.user.email || '?')[0].toUpperCase()
                 )}

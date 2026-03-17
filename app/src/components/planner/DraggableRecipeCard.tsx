@@ -28,7 +28,7 @@ export default function DraggableRecipeCard({ recipe, index, isSelected, onSelec
       }`}
     >
       {recipe.image ? (
-        <img src={recipe.image} alt="" className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
+        <img src={recipe.image} alt="" loading="lazy" className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
       ) : (
         <div className="w-11 h-11 rounded-xl bg-[#F4F2EA] flex items-center justify-center flex-shrink-0">
           <UtensilsCrossed className="w-5 h-5 text-[#C49A5C]/40" />

@@ -25,6 +25,7 @@ import {
 import DraggableRecipeCard from '@/components/planner/DraggableRecipeCard';
 import DroppableMealSlot from '@/components/planner/DroppableMealSlot';
 import DragOverlayContent from '@/components/planner/DragOverlayContent';
+import OptimizedImage from '@/components/OptimizedImage';
 
 interface PlannerOverlayProps {
   plannerMeals: PlannerWeek;
@@ -356,7 +357,7 @@ export default function PlannerOverlay({
               <div className="bg-[#C49A5C]/8 border border-[#C49A5C]/15 rounded-2xl p-4 mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {recipeToAssign.image && (
-                    <img src={recipeToAssign.image} alt="" className="w-11 h-11 rounded-xl object-cover" />
+                    <img src={recipeToAssign.image} alt="" loading="lazy" className="w-11 h-11 rounded-xl object-cover" />
                   )}
                   <div>
                     <p className="text-sm font-bold text-[#1A1A1A]">Adding: {toTitleCase(recipeToAssign.name)}</p>
@@ -392,7 +393,7 @@ export default function PlannerOverlay({
 
                         {recipe.image && (
                           <div className="relative h-36 mx-4 rounded-2xl overflow-hidden">
-                            <img src={recipe.image} alt={recipe.name} className="w-full h-full object-cover image-grade" />
+                            <OptimizedImage src={recipe.image} alt={recipe.name} className="w-full h-full object-cover image-grade" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                             <p className="absolute bottom-3 left-3 right-3 text-white font-bold text-sm leading-snug drop-shadow-sm">{toTitleCase(recipe.name)}</p>
                           </div>

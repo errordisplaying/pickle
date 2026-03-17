@@ -101,7 +101,7 @@ export default function ShoppingListOverlay({
                   <path d="M58 78 L62 82 L70 74" stroke="#C49A5C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-[#1A1A1A] mb-2">your list is empty</h3>
+              <h3 className="text-2xl font-bold text-[#1A1A1A] mb-2 font-handwritten">your list is empty</h3>
               <p className="text-[#6E6A60] text-sm leading-relaxed mb-6">Add meals to your planner first, then we'll generate a smart shopping list grouped by aisle.</p>
               <Button onClick={onOpenPlanner} className="bg-[#C49A5C] text-white hover:bg-[#8B6F3C] rounded-full btn-press">
                 Open Planner

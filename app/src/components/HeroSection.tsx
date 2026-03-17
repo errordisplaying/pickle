@@ -16,6 +16,7 @@ import { DIETARY_FILTERS, SERVING_MULTIPLIERS } from '@/constants';
 import HeroWalkthrough from './HeroWalkthrough';
 import { normalizeScrapedRecipe, toTitleCase, scaleNutrition } from '@/utils';
 import { trackEvent, EVENTS } from '@/utils/analytics';
+import OptimizedImage from '@/components/OptimizedImage';
 
 interface HeroSectionProps {
   heroRef: React.RefObject<HTMLDivElement | null>;
@@ -524,7 +525,7 @@ export default function HeroSection({
                   return (
                     <>
                       <div className="relative h-56 sm:h-72">
-                        <img src={recipe.image} alt={recipe.name} loading="lazy" decoding="async" className="w-full h-full object-cover image-grade" />
+                        <OptimizedImage src={recipe.image} alt={recipe.name} className="w-full h-full object-cover image-grade" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                         <button
                           onClick={() => setExpandedRecipe(null)}

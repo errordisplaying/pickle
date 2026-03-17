@@ -83,6 +83,7 @@
   .japandi-card {
     @apply rounded-[28px] overflow-hidden;
     box-shadow: 0 18px 50px rgba(0,0,0,0.10);
+    background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 3h1v1H1V3zm2-2h1v1H3V1z' fill='%23000' opacity='.02'/%3E%3C/svg%3E");
   }
 
   .japandi-button {
@@ -412,7 +413,9 @@
 }
 .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.10),
+    0 0 60px rgba(196,154,92,0.06);
 }
 .card-hover:active {
   transform: scale(0.98);
