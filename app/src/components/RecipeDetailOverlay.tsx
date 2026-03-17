@@ -1,10 +1,13 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { X, Heart, Calendar, Share2, Clock, Flame, ChefHat, Lightbulb, Printer, ExternalLink, Check, Star, MessageSquare } from 'lucide-react';
-import { toTitleCase } from '@/utils';
+import { X, Heart, Calendar, Share2, Clock, Flame, ChefHat, Lightbulb, Printer, ExternalLink, Check, Star, MessageSquare, Timer } from 'lucide-react';
+import { toTitleCase, scaleNutrition, scaleIngredientText, extractTimeFromStep } from '@/utils';
+import { SERVING_MULTIPLIERS } from '@/constants';
 import type { SavedRecipe, Toast } from '@/types';
 import ShareCardModal from './ShareCardModal';
 import { useFocusTrap } from '@/hooks/use-focus-trap';
+import { useCookingTimers } from '@/hooks/use-cooking-timers';
 import OptimizedImage from '@/components/OptimizedImage';
+import CookingTimerBar from './CookingTimerBar';
 
 interface RecipeDetailOverlayProps {
   recipe: SavedRecipe;
@@ -32,7 +35,11 @@ export default function RecipeDetailOverlay({
   const [localRating, setLocalRating] = useState<number>(recipe.rating || 0);
   const [hoveredStar, setHoveredStar] = useState<number>(0);
   const [localNotes, setLocalNotes] = useState<string>(recipe.personalNotes || '');
+  const [servingMultiplier, setServingMultiplier] = useState<number>(1);
+  const [timerSetupStep, setTimerSetupStep] = useState<number | null>(null);
+  const [customMinutes, setCustomMinutes] = useState<string>('');
   const notesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { timers, startTimer, pauseTimer, resumeTimer, resetTimer, removeTimer } = useCookingTimers();
 
   // Debounced notes saving
   const saveNotes = useCallback((text: string) => {
@@ -80,6 +87,11 @@ export default function RecipeDetailOverlay({
     };
   }, []);
 
+  // Scaled nutrition for serving size
+  const scaledNutrition = servingMultiplier !== 1
+    ? scaleNutrition(recipe.nutrition, servingMultiplier)
+    : recipe.nutrition;
+
   // Parse numeric value from nutrition string like "25g" -> 25
   const parseNutrition = (val: string | number): number => {
     if (typeof val === 'number') return val;
@@ -87,9 +99,9 @@ export default function RecipeDetailOverlay({
   };
 
   // Calculate macro percentages for visual bar
-  const protein = parseNutrition(recipe.nutrition.protein);
-  const carbs = parseNutrition(recipe.nutrition.carbs);
-  const fat = parseNutrition(recipe.nutrition.fat);
+  const protein = parseNutrition(scaledNutrition.protein);
+  const carbs = parseNutrition(scaledNutrition.carbs);
+  const fat = parseNutrition(scaledNutrition.fat);
   const totalMacroGrams = protein + carbs + fat;
   const proteinPct = totalMacroGrams > 0 ? Math.round((protein / totalMacroGrams) * 100) : 0;
   const carbsPct = totalMacroGrams > 0 ? Math.round((carbs / totalMacroGrams) * 100) : 0;
@@ -190,24 +202,47 @@ export default function RecipeDetailOverlay({
             )}
           </div>
 
+          {/* Serving Size Selector */}
+          <div className="flex items-center gap-3 mx-6 mt-4 bg-white rounded-2xl p-3 shadow-sm">
+            <span className="text-sm font-medium text-[#1A1A1A]">Servings:</span>
+            <div className="flex gap-1.5">
+              {SERVING_MULTIPLIERS.map(mult => (
+                <button
+                  key={mult}
+                  onClick={() => setServingMultiplier(mult)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                    servingMultiplier === mult
+                      ? 'bg-[#C49A5C] text-white shadow-sm'
+                      : 'bg-[#F4F2EA] text-[#6E6A60] hover:bg-[#E8E6DC]'
+                  }`}
+                >
+                  {mult}x
+                </button>
+              ))}
+            </div>
+            {servingMultiplier !== 1 && (
+              <span className="text-xs text-[#C49A5C] italic ml-auto">Scaled to {servingMultiplier}x</span>
+            )}
+          </div>
+
           {/* Enhanced Nutrition Section */}
           <div className="px-6 py-4">
             <div className="grid grid-cols-4 gap-3 mb-3">
               <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
                 <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Calories</p>
-                <p className="text-xl font-black text-[#C49A5C]">{recipe.nutrition.calories}</p>
+                <p className="text-xl font-black text-[#C49A5C]">{scaledNutrition.calories}</p>
               </div>
               <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
                 <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Protein</p>
-                <p className="text-xl font-black text-[#1A1A1A]">{recipe.nutrition.protein}</p>
+                <p className="text-xl font-black text-[#1A1A1A]">{scaledNutrition.protein}</p>
               </div>
               <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
                 <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Carbs</p>
-                <p className="text-xl font-black text-[#1A1A1A]">{recipe.nutrition.carbs}</p>
+                <p className="text-xl font-black text-[#1A1A1A]">{scaledNutrition.carbs}</p>
               </div>
               <div className="bg-white rounded-2xl p-3 text-center shadow-sm">
                 <p className="text-[10px] uppercase tracking-wider text-[#6E6A60] mb-1">Fat</p>
-                <p className="text-xl font-black text-[#1A1A1A]">{recipe.nutrition.fat}</p>
+                <p className="text-xl font-black text-[#1A1A1A]">{scaledNutrition.fat}</p>
               </div>
             </div>
 
@@ -240,7 +275,7 @@ export default function RecipeDetailOverlay({
                     {recipe.ingredients.map((ingredient, i) => (
                       <li key={i} className="flex items-start gap-3 text-[#3A3A3A]">
                         <span className="w-5 h-5 mt-0.5 flex-shrink-0 rounded-full border-2 border-[#C49A5C]/30" />
-                        <span className="text-sm leading-relaxed">{ingredient}</span>
+                        <span className="text-sm leading-relaxed">{scaleIngredientText(ingredient, servingMultiplier)}</span>
                       </li>
                     ))}
                   </ul>
@@ -261,23 +296,87 @@ export default function RecipeDetailOverlay({
                   {recipe.steps.map((step, i) => (
                     <li
                       key={i}
-                      onClick={() => toggleStep(i)}
-                      className={`flex gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-200 ${
+                      className={`flex gap-3 p-3 rounded-2xl transition-all duration-200 ${
                         checkedSteps.has(i)
                           ? 'bg-[#C49A5C]/8 opacity-60'
                           : 'bg-white shadow-sm hover:shadow-md'
                       }`}
                     >
-                      <span className={`w-7 h-7 flex-shrink-0 rounded-full text-xs font-bold flex items-center justify-center transition-all ${
-                        checkedSteps.has(i)
-                          ? 'bg-[#C49A5C] text-white'
-                          : 'bg-[#F4F2EA] text-[#C49A5C]'
-                      }`}>
+                      <span
+                        onClick={() => toggleStep(i)}
+                        className={`w-7 h-7 flex-shrink-0 rounded-full text-xs font-bold flex items-center justify-center cursor-pointer transition-all ${
+                          checkedSteps.has(i)
+                            ? 'bg-[#C49A5C] text-white'
+                            : 'bg-[#F4F2EA] text-[#C49A5C]'
+                        }`}
+                      >
                         {checkedSteps.has(i) ? <Check className="w-3.5 h-3.5" /> : i + 1}
                       </span>
-                      <p className={`text-sm leading-relaxed pt-0.5 ${
-                        checkedSteps.has(i) ? 'line-through text-[#6E6A60]' : 'text-[#3A3A3A]'
-                      }`}>{step}</p>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          onClick={() => toggleStep(i)}
+                          className={`text-sm leading-relaxed cursor-pointer ${
+                            checkedSteps.has(i) ? 'line-through text-[#6E6A60]' : 'text-[#3A3A3A]'
+                          }`}
+                        >{step}</p>
+                        {/* Inline timer setup */}
+                        {timerSetupStep === i && (
+                          <div className="mt-2 flex items-center gap-2 animate-fade-in" onClick={e => e.stopPropagation()}>
+                            <input
+                              type="number"
+                              value={customMinutes}
+                              onChange={e => setCustomMinutes(e.target.value)}
+                              placeholder={String(Math.ceil((extractTimeFromStep(step) || 300) / 60))}
+                              className="w-16 px-2 py-1 text-xs rounded-full border border-[#E8E6DC] text-center focus:border-[#C49A5C] focus:outline-none"
+                              min="1"
+                              max="999"
+                              autoFocus
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') {
+                                  const mins = parseInt(customMinutes) || Math.ceil((extractTimeFromStep(step) || 300) / 60);
+                                  startTimer(i, `Step ${i + 1}`, mins * 60);
+                                  setTimerSetupStep(null);
+                                  setCustomMinutes('');
+                                }
+                              }}
+                            />
+                            <span className="text-xs text-[#6E6A60]">min</span>
+                            <button
+                              onClick={() => {
+                                const mins = parseInt(customMinutes) || Math.ceil((extractTimeFromStep(step) || 300) / 60);
+                                startTimer(i, `Step ${i + 1}`, mins * 60);
+                                setTimerSetupStep(null);
+                                setCustomMinutes('');
+                              }}
+                              className="px-3 py-1 bg-[#C49A5C] text-white text-xs rounded-full font-medium hover:bg-[#8B6F3C] transition-colors btn-press"
+                            >
+                              Start
+                            </button>
+                            <button
+                              onClick={() => setTimerSetupStep(null)}
+                              className="text-[#6E6A60] hover:text-[#1A1A1A] transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {/* Timer icon */}
+                      {!checkedSteps.has(i) && (
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            const defaultSeconds = extractTimeFromStep(step);
+                            setTimerSetupStep(timerSetupStep === i ? null : i);
+                            setCustomMinutes(defaultSeconds ? String(Math.ceil(defaultSeconds / 60)) : '');
+                          }}
+                          className="w-7 h-7 flex-shrink-0 rounded-full bg-[#F4F2EA] text-[#C49A5C] flex items-center justify-center hover:bg-[#C49A5C] hover:text-white transition-all"
+                          title="Set timer for this step"
+                          aria-label={`Set cooking timer for step ${i + 1}`}
+                        >
+                          <Timer className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ol>
@@ -347,8 +446,21 @@ export default function RecipeDetailOverlay({
             </div>
           )}
 
-          {/* Bottom padding for action bar */}
-          <div className="h-20" />
+          {/* Active Cooking Timers */}
+          {timers.length > 0 && (
+            <div className="sticky bottom-[68px] z-10 mx-4 mb-2">
+              <CookingTimerBar
+                timers={timers}
+                onPause={pauseTimer}
+                onResume={resumeTimer}
+                onReset={resetTimer}
+                onRemove={removeTimer}
+              />
+            </div>
+          )}
+
+          {/* Bottom padding for action bar + optional timer bar */}
+          <div className={timers.length > 0 ? 'h-32' : 'h-20'} />
         </div>
 
         {/* Sticky Action Bar */}

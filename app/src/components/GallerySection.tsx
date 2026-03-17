@@ -1,11 +1,14 @@
 import { Clock, Flame, Heart, Star, Sparkles } from 'lucide-react';
 import { toTitleCase } from '@/utils';
-import type { SavedRecipe, ScoredRecipe } from '@/types';
+import type { SavedRecipe, ScoredRecipe, DietaryFilter } from '@/types';
+import { DIETARY_FILTERS } from '@/constants';
 import OptimizedImage from '@/components/OptimizedImage';
 
 interface GallerySectionProps {
   galleryRef: React.RefObject<HTMLDivElement | null>;
   recipes: ScoredRecipe[];
+  activeDietaryFilters: DietaryFilter[];
+  onToggleDietaryFilter: (filter: DietaryFilter) => void;
   onToggleFavorite: (recipe: SavedRecipe) => void;
   isFavorite: (name: string) => boolean;
   onOpenRecipe: (recipe: SavedRecipe) => void;
@@ -25,7 +28,7 @@ const TAG_ICONS: Record<string, typeof Star> = {
   Spicy: Flame,
 };
 
-export default function GallerySection({ galleryRef, recipes, onToggleFavorite, isFavorite, onOpenRecipe }: GallerySectionProps) {
+export default function GallerySection({ galleryRef, recipes, activeDietaryFilters, onToggleDietaryFilter, onToggleFavorite, isFavorite, onOpenRecipe }: GallerySectionProps) {
   return (
     <section ref={galleryRef} className="section-pinned z-20">
       <div className="absolute inset-0 bg-warm-white" />
@@ -40,13 +43,43 @@ export default function GallerySection({ galleryRef, recipes, onToggleFavorite, 
         <p className="text-[#6E6A60] text-lg leading-relaxed max-w-xl">
           Curated picks based on what you love. Tap any card to dive in.
         </p>
+        {/* Dietary Filter Bar */}
+        <div className="flex items-center gap-1.5 flex-wrap mt-4">
+          {DIETARY_FILTERS.map(filter => (
+            <button
+              key={filter}
+              onClick={() => onToggleDietaryFilter(filter)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                activeDietaryFilters.includes(filter)
+                  ? 'bg-[#C49A5C] text-white shadow-sm'
+                  : 'bg-white/80 backdrop-blur-sm text-[#6E6A60] border border-[#E8E6DC] hover:bg-[#E8E6DC]'
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+          {activeDietaryFilters.length > 0 && (
+            <span className="text-xs text-[#C49A5C] font-semibold ml-1">
+              ({activeDietaryFilters.length} active)
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Horizontal Scrolling Card Slider */}
       <div className="gallery-cards relative h-[60vh] lg:absolute lg:left-0 lg:right-0 lg:top-[30vh] lg:bottom-[6vh] lg:h-auto overflow-x-auto overflow-y-hidden px-0 lg:px-[6vw] recipe-slider snap-slider">
         <div className="flex gap-5 h-full w-max py-2">
+          {/* Empty state when filters remove all recipes */}
+          {recipes.length === 0 && activeDietaryFilters.length > 0 && (
+            <div className="w-[260px] h-full flex-shrink-0 flex items-center justify-center">
+              <div className="text-center px-6">
+                <p className="text-[#6E6A60] text-sm font-medium">No recipes match your filters.</p>
+                <p className="text-[#B5B1A8] text-xs mt-1">Try removing a filter to see more options.</p>
+              </div>
+            </div>
+          )}
           {/* Skeleton cards while recipes load */}
-          {recipes.length === 0 && Array.from({ length: 4 }).map((_, i) => (
+          {recipes.length === 0 && activeDietaryFilters.length === 0 && Array.from({ length: 4 }).map((_, i) => (
             <div key={`skel-${i}`} className="w-[260px] h-full flex-shrink-0 rounded-[28px] overflow-hidden bg-[#E8E6DC]">
               <div className="h-[60%] shimmer-placeholder" />
               <div className="p-4 space-y-3">

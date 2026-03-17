@@ -182,6 +182,82 @@ export const scaleNutrition = (nutrition: RecipeNutrition, multiplier: number): 
   fat: `${Math.round(parseNutritionValue(nutrition.fat) * multiplier)}g`,
 });
 
+// ── Ingredient Scaling ──────────────────────────────────────────
+const FRACTION_MAP: [number, string][] = [
+  [0.25, '¼'], [0.333, '⅓'], [0.5, '½'], [0.667, '⅔'], [0.75, '¾'],
+];
+
+const parseFraction = (raw: string): number => {
+  // Handle mixed fractions: "1 1/2"
+  const mixedMatch = raw.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+  if (mixedMatch) return parseInt(mixedMatch[1]) + parseInt(mixedMatch[2]) / parseInt(mixedMatch[3]);
+  // Handle simple fractions: "1/2"
+  const fracMatch = raw.match(/^(\d+)\/(\d+)$/);
+  if (fracMatch) return parseInt(fracMatch[1]) / parseInt(fracMatch[2]);
+  // Handle decimals / integers
+  return parseFloat(raw) || 0;
+};
+
+const formatQuantity = (num: number): string => {
+  if (num === 0) return '0';
+  const whole = Math.floor(num);
+  const frac = num - whole;
+  if (frac < 0.05) return String(whole);
+  // Try to match a common cooking fraction
+  const match = FRACTION_MAP.find(([val]) => Math.abs(frac - val) < 0.05);
+  if (match) return whole > 0 ? `${whole} ${match[1]}` : match[1];
+  // Fall back to one decimal
+  return num % 1 === 0 ? String(num) : num.toFixed(1);
+};
+
+export const scaleIngredientText = (ingredient: string, multiplier: number): string => {
+  if (multiplier === 1) return ingredient;
+  // Match leading quantities: "2 cups", "1/2 tsp", "1 1/2 cups", "0.5 lb"
+  const match = ingredient.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+\.?\d*)\s*/);
+  if (!match) return ingredient;
+  const raw = match[1];
+  const parsed = parseFraction(raw);
+  if (parsed === 0) return ingredient;
+  const scaled = parsed * multiplier;
+  return ingredient.replace(raw, formatQuantity(scaled));
+};
+
+// ── Time Extraction ─────────────────────────────────────────────
+export const extractTimeFromStep = (stepText: string): number | null => {
+  const regex = /(\d+)(?:\s*[-–]\s*\d+)?\s*(minutes?|mins?|hours?|hrs?|seconds?|secs?)/gi;
+  const match = regex.exec(stepText);
+  if (!match) return null;
+  const value = parseInt(match[1]);
+  const unit = match[2].toLowerCase();
+  if (unit.startsWith('hour') || unit.startsWith('hr')) return value * 3600;
+  if (unit.startsWith('min')) return value * 60;
+  if (unit.startsWith('sec')) return value;
+  return null;
+};
+
+// ── Dietary Filter Matching ─────────────────────────────────────
+export const DIETARY_FILTER_TAG_MAP: Record<string, string[]> = {
+  'Vegan': ['Vegan'],
+  'Vegetarian': ['Vegetarian', 'Vegan'],
+  'Gluten-Free': ['Gluten-Free', 'Keto'],
+  'Dairy-Free': ['Dairy-Free', 'Vegan'],
+  'Keto': ['Keto'],
+  'Nut-Free': ['Nut-Free'],
+  'Kosher': ['Kosher'],
+  'Halal': ['Halal'],
+};
+
+export const recipeMatchesDietaryFilters = (
+  recipe: { tags: string[] },
+  activeFilters: string[]
+): boolean => {
+  if (activeFilters.length === 0) return true;
+  return activeFilters.every(filter => {
+    const compatibleTags = DIETARY_FILTER_TAG_MAP[filter] || [filter];
+    return recipe.tags.some(tag => compatibleTags.includes(tag));
+  });
+};
+
 export const getNutritionProgressColor = (current: number, goal: number): string => {
   if (goal === 0) return 'bg-[#E8E6DC]';
   const ratio = current / goal;

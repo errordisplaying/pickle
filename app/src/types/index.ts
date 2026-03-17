@@ -126,3 +126,14 @@ export interface ChatMessage {
   content: string;
   timestamp: number;
 }
+
+// ── Cooking Timer Types ────────────────────────────────────────
+
+export interface CookingTimer {
+  id: string;
+  stepIndex: number;
+  label: string;
+  totalSeconds: number;
+  remainingSeconds: number;
+  status: 'running' | 'paused' | 'completed';
+}

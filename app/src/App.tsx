@@ -16,6 +16,7 @@ import {
   getWeeklyNutrition,
   toTitleCase, formatRecipeShareText, extractIngredientsFromPlanner,
   getAllBrowseRecipes,
+  recipeMatchesDietaryFilters,
 } from '@/utils';
 import { buildTasteProfile, getPersonalizedRecipes } from '@/utils/recommendations';
 import { initAnalytics, trackEvent, setAnalyticsUserId, EVENTS } from '@/utils/analytics';
@@ -476,9 +477,13 @@ function App() {
   useEffect(() => {
     const profile = buildTasteProfile(favorites, plannerMeals, recentRecipes);
     saveToStorage(STORAGE_KEYS.TASTE_PROFILE, profile);
-    const recipes = getPersonalizedRecipes(suggestedRecipes, profile, 9, nutritionGoals);
-    setPersonalizedRecipes(recipes);
-  }, [favorites, plannerMeals, recentRecipes, nutritionGoals]);
+    const recipes = getPersonalizedRecipes(suggestedRecipes, profile, 20, nutritionGoals);
+    // Apply dietary filters
+    const filtered = activeDietaryFilters.length > 0
+      ? recipes.filter(scored => recipeMatchesDietaryFilters(scored.normalized, activeDietaryFilters))
+      : recipes;
+    setPersonalizedRecipes(filtered.slice(0, 9));
+  }, [favorites, plannerMeals, recentRecipes, nutritionGoals, activeDietaryFilters]);
 
   // ── Supabase Auth Initialization ────────────────────────────
   useEffect(() => {
@@ -1062,6 +1067,8 @@ function App() {
         <GallerySection
           galleryRef={galleryRef}
           recipes={personalizedRecipes}
+          activeDietaryFilters={activeDietaryFilters}
+          onToggleDietaryFilter={toggleDietaryFilter}
           onToggleFavorite={toggleFavorite}
           isFavorite={isFavorite}
           onOpenRecipe={(recipe) => {
