@@ -59,6 +59,9 @@ export interface ShoppingItem {
   category: IngredientCategory;
   purchased: boolean;
   fromRecipes: string[];
+  quantity?: number;
+  unit?: string;
+  rawLine?: string;
 }
 
 export interface UserProfile {

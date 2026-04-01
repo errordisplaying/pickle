@@ -3,7 +3,8 @@ import {
   Search, Beaker, Clock, X, Plus,
   Heart, ArrowRight, Send,
   Flame, UtensilsCrossed,
-  Share2, Calendar, Sparkles
+  Share2, Calendar, Sparkles,
+  Link, ClipboardPaste, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,8 +21,8 @@ import OptimizedImage from '@/components/OptimizedImage';
 
 interface HeroSectionProps {
   heroRef: React.RefObject<HTMLDivElement | null>;
-  mode: 'recipe' | 'testKitchen';
-  setMode: (mode: 'recipe' | 'testKitchen') => void;
+  mode: 'recipe' | 'testKitchen' | 'import';
+  setMode: (mode: 'recipe' | 'testKitchen' | 'import') => void;
   ingredients: string;
   setIngredients: (val: string) => void;
   timeAvailable: string;
@@ -46,6 +47,23 @@ interface HeroSectionProps {
   onAddToPlanner: (recipe: SavedRecipe) => void;
   smartSearchEnabled: boolean;
   onToggleSmartSearch: () => void;
+  onImportUrl: (url: string) => void;
+}
+
+const IMPORT_STAGES = ['Fetching page...', 'Extracting recipe...', 'Almost there...'];
+function ImportLoadingText() {
+  const [stage, setStage] = useState(0);
+  useEffect(() => {
+    const t1 = setTimeout(() => setStage(1), 2000);
+    const t2 = setTimeout(() => setStage(2), 5000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+  return (
+    <span className="flex items-center gap-2">
+      <Loader2 className="w-4 h-4 animate-spin" />
+      {IMPORT_STAGES[stage]}
+    </span>
+  );
 }
 
 export default function HeroSection({
@@ -76,7 +94,28 @@ export default function HeroSection({
   onAddToPlanner,
   smartSearchEnabled,
   onToggleSmartSearch,
+  onImportUrl,
 }: HeroSectionProps) {
+  // ── Local State: Import Recipe ────────────────────────────────
+  const [importUrl, setImportUrl] = useState('');
+
+  const handleImport = () => {
+    const trimmed = importUrl.trim();
+    if (!trimmed) return;
+    onImportUrl(trimmed);
+  };
+
+  const handlePasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text && text.startsWith('http')) {
+        setImportUrl(text);
+      }
+    } catch {
+      // Clipboard API not available or permission denied — ignore
+    }
+  };
+
   // ── Local State: Test Kitchen ──────────────────────────────────
   const [tkDishName, setTkDishName] = useState('');
   const [tkIngredients, setTkIngredients] = useState<string[]>([]);
@@ -171,26 +210,36 @@ export default function HeroSection({
 
         {/* Input Panel — order-2 on mobile (below the image) */}
         <div data-tour="search" className="hero-panel relative w-full order-2 lg:order-none lg:absolute lg:left-[66vw] lg:top-[20vh] lg:w-[28vw] lg:min-w-[320px] bg-warm-white border border-black/5 rounded-[28px] p-6 shadow-xl z-20">
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-1.5 mb-4">
           <button
             onClick={() => setMode('recipe')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full text-sm font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-xs font-semibold transition-all ${
               mode === 'recipe'
                 ? 'bg-[#C49A5C] text-white'
                 : 'bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#DAD6CC]'
             }`}
           >
-            <Search className="w-4 h-4" /> Find Recipes
+            <Search className="w-3.5 h-3.5" /> Find Recipes
+          </button>
+          <button
+            onClick={() => setMode('import')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-xs font-semibold transition-all ${
+              mode === 'import'
+                ? 'bg-[#C49A5C] text-white'
+                : 'bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#DAD6CC]'
+            }`}
+          >
+            <Link className="w-3.5 h-3.5" /> Import URL
           </button>
           <button
             onClick={() => setMode('testKitchen')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full text-sm font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full text-xs font-semibold transition-all ${
               mode === 'testKitchen'
                 ? 'bg-[#C49A5C] text-white'
                 : 'bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#DAD6CC]'
             }`}
           >
-            <Beaker className="w-4 h-4" /> Test Kitchen
+            <Beaker className="w-3.5 h-3.5" /> Test Kitchen
           </button>
         </div>
 
@@ -316,6 +365,58 @@ export default function HeroSection({
               <Badge variant="secondary" className="bg-[#E8E6DC] text-[#6E6A60] hover:bg-[#DAD6CC] cursor-pointer rounded-full">
                 Under 30 min
               </Badge>
+            </div>
+          </div>
+        ) : mode === 'import' ? (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-[#1A1A1A] mb-2">
+                Paste a recipe URL
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleImport()}
+                  placeholder="https://allrecipes.com/recipe/..."
+                  className="bg-white border-[#E8E6DC] rounded-2xl text-sm flex-1"
+                />
+                <Button
+                  onClick={handlePasteFromClipboard}
+                  className="bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#DAD6CC] rounded-full px-3"
+                  aria-label="Paste from clipboard"
+                >
+                  <ClipboardPaste className="w-4 h-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-[#6E6A60] mt-1">
+                Works with AllRecipes, Food Network, BBC Good Food, and most recipe sites
+              </p>
+            </div>
+
+            <Button
+              onClick={handleImport}
+              disabled={!importUrl.trim() || loading}
+              className="w-full japandi-button bg-[#C49A5C] text-white hover:bg-[#8B6F3C] disabled:opacity-50"
+            >
+              {loading ? (
+                <ImportLoadingText />
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Link className="w-4 h-4" /> Import Recipe
+                </span>
+              )}
+            </Button>
+            {loading && (
+              <div className="w-full h-1 bg-[#E8E6DC] rounded-full overflow-hidden mt-2">
+                <div className="h-full bg-[#C49A5C] rounded-full animate-indeterminate-progress" />
+              </div>
+            )}
+
+            <div className="bg-[#F4F2EA] rounded-2xl p-3">
+              <p className="text-xs text-[#6E6A60] leading-relaxed">
+                <strong className="text-[#1A1A1A]">How it works:</strong> Chickpea reads the recipe page, extracts ingredients, steps, and nutrition, and saves it to your collection — ready to cook, plan, or share.
+              </p>
             </div>
           </div>
         ) : !tkActive ? (

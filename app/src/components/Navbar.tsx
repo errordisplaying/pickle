@@ -5,8 +5,8 @@ import type { Session } from '@supabase/supabase-js';
 import type { SavedRecipe, ShoppingItem, UserProfile } from '@/types';
 
 interface NavbarProps {
-  mode: 'recipe' | 'testKitchen';
-  setMode: (mode: 'recipe' | 'testKitchen') => void;
+  mode: 'recipe' | 'testKitchen' | 'import';
+  setMode: (mode: 'recipe' | 'testKitchen' | 'import') => void;
   favorites: SavedRecipe[];
   shoppingList: ShoppingItem[];
   session: Session | null;

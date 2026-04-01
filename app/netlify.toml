@@ -2,6 +2,23 @@
   command = "npm run build"
   publish = "dist"
 
+# Edge function for SEO meta injection on recipe pages
+[[edge_functions]]
+  function = "seo"
+  path = "/recipe/*"
+
+# Dynamic sitemap via edge function
+[[edge_functions]]
+  function = "sitemap"
+  path = "/sitemap.xml"
+
+# Proxy /api/* to the Render backend (must come before SPA fallback)
+[[redirects]]
+  from = "/api/*"
+  to = "https://chickpea-api.onrender.com/api/:splat"
+  status = 200
+  force = true
+
 # SPA fallback — all routes serve index.html
 [[redirects]]
   from = "/*"

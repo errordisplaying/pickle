@@ -187,7 +187,7 @@ const FRACTION_MAP: [number, string][] = [
   [0.25, '¼'], [0.333, '⅓'], [0.5, '½'], [0.667, '⅔'], [0.75, '¾'],
 ];
 
-const parseFraction = (raw: string): number => {
+export const parseFraction = (raw: string): number => {
   // Handle mixed fractions: "1 1/2"
   const mixedMatch = raw.match(/^(\d+)\s+(\d+)\/(\d+)$/);
   if (mixedMatch) return parseInt(mixedMatch[1]) + parseInt(mixedMatch[2]) / parseInt(mixedMatch[3]);
@@ -198,7 +198,7 @@ const parseFraction = (raw: string): number => {
   return parseFloat(raw) || 0;
 };
 
-const formatQuantity = (num: number): string => {
+export const formatQuantity = (num: number): string => {
   if (num === 0) return '0';
   const whole = Math.floor(num);
   const frac = num - whole;
@@ -220,6 +220,99 @@ export const scaleIngredientText = (ingredient: string, multiplier: number): str
   if (parsed === 0) return ingredient;
   const scaled = parsed * multiplier;
   return ingredient.replace(raw, formatQuantity(scaled));
+};
+
+// ── Ingredient Line Parser ──────────────────────────────────────
+const UNIT_ALIASES: Record<string, string> = {
+  tablespoon: 'tbsp', tablespoons: 'tbsp', tbsp: 'tbsp', tbs: 'tbsp',
+  teaspoon: 'tsp', teaspoons: 'tsp', tsp: 'tsp',
+  cup: 'cup', cups: 'cup',
+  ounce: 'oz', ounces: 'oz', oz: 'oz',
+  pound: 'lb', pounds: 'lb', lb: 'lb', lbs: 'lb',
+  gram: 'g', grams: 'g', g: 'g',
+  kilogram: 'kg', kilograms: 'kg', kg: 'kg',
+  milliliter: 'ml', milliliters: 'ml', ml: 'ml',
+  liter: 'l', liters: 'l', l: 'l',
+  clove: 'clove', cloves: 'clove',
+  can: 'can', cans: 'can',
+  bunch: 'bunch', bunches: 'bunch',
+  slice: 'slice', slices: 'slice',
+  piece: 'piece', pieces: 'piece',
+  pinch: 'pinch', dash: 'dash', handful: 'handful',
+  sprig: 'sprig', sprigs: 'sprig',
+  stalk: 'stalk', stalks: 'stalk',
+  head: 'head', heads: 'head',
+  package: 'package', packages: 'package', pkg: 'package',
+  bag: 'bag', bags: 'bag',
+  jar: 'jar', jars: 'jar',
+  bottle: 'bottle', bottles: 'bottle',
+  stick: 'stick', sticks: 'stick',
+  large: 'large', medium: 'medium', small: 'small',
+};
+
+const WORD_NUMBERS: Record<string, number> = {
+  one: 1, two: 2, three: 3, four: 4, five: 5, six: 6,
+  seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
+  a: 1, an: 1,
+};
+
+export interface ParsedIngredient {
+  quantity?: number;
+  unit?: string;
+  name: string;
+}
+
+export const parseIngredientLine = (line: string): ParsedIngredient => {
+  const trimmed = line.trim();
+  if (!trimmed) return { name: trimmed };
+
+  // Try to match leading quantity: "2", "1/2", "1 1/2", "0.5", unicode fractions
+  let remaining = trimmed;
+  let quantity: number | undefined;
+
+  // Unicode fraction characters
+  const unicodeFracs: Record<string, number> = { '¼': 0.25, '⅓': 0.333, '½': 0.5, '⅔': 0.667, '¾': 0.75 };
+  const unicodeMatch = remaining.match(/^(\d+)?\s*([¼⅓½⅔¾])\s*/);
+  if (unicodeMatch) {
+    const whole = unicodeMatch[1] ? parseInt(unicodeMatch[1]) : 0;
+    quantity = whole + (unicodeFracs[unicodeMatch[2]] || 0);
+    remaining = remaining.slice(unicodeMatch[0].length);
+  } else {
+    // Numeric: "1 1/2", "1/2", "2-3", "2.5", or word numbers
+    const numMatch = remaining.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+\.?\d*)\s*(?:[-–]\s*\d+\.?\d*)?\s*/);
+    if (numMatch) {
+      // For ranges like "2-3", take the first number
+      const raw = numMatch[1];
+      quantity = parseFraction(raw);
+      if (quantity === 0) quantity = undefined;
+      remaining = remaining.slice(numMatch[0].length);
+    } else {
+      // Word numbers: "one onion", "a clove"
+      const wordMatch = remaining.match(/^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|an?)\b\s*/i);
+      if (wordMatch) {
+        quantity = WORD_NUMBERS[wordMatch[1].toLowerCase()];
+        remaining = remaining.slice(wordMatch[0].length);
+      }
+    }
+  }
+
+  // Try to match a unit
+  let unit: string | undefined;
+  if (quantity !== undefined) {
+    const unitMatch = remaining.match(/^([a-zA-Z]+)\.?\s+/);
+    if (unitMatch) {
+      const normalized = UNIT_ALIASES[unitMatch[1].toLowerCase()];
+      if (normalized) {
+        unit = normalized;
+        remaining = remaining.slice(unitMatch[0].length);
+      }
+    }
+  }
+
+  // Clean up remaining name
+  const name = remaining.replace(/^(of\s+)/i, '').trim() || trimmed;
+
+  return { quantity, unit, name };
 };
 
 // ── Time Extraction ─────────────────────────────────────────────
@@ -404,6 +497,7 @@ export const extractIngredientsFromPlanner = (plannerMeals: PlannerWeek): Shoppi
       if (recipe.ingredients && recipe.ingredients.length > 0) {
         recipe.ingredients.forEach(ingredientLine => {
           const lower = ingredientLine.toLowerCase();
+          const parsed = parseIngredientLine(ingredientLine);
 
           // Find matching category keyword for this ingredient
           const matchedKeyword = ingredientKeywords.find(kw => lower.includes(kw));
@@ -412,20 +506,27 @@ export const extractIngredientsFromPlanner = (plannerMeals: PlannerWeek): Shoppi
             : categorizeIngredient(ingredientLine);
 
           // Deduplicate by matched keyword or cleaned name
-          const key = matchedKeyword || lower.replace(/[\d.\/]+/g, '').trim();
+          const key = matchedKeyword || parsed.name.toLowerCase().replace(/[\d.\/]+/g, '').trim();
 
           if (ingredientMap.has(key)) {
             const existing = ingredientMap.get(key)!;
             if (!existing.fromRecipes.includes(recipe.name)) {
               existing.fromRecipes.push(recipe.name);
             }
+            // Sum quantities if same unit (or both unitless)
+            if (existing.quantity !== undefined && parsed.quantity !== undefined && existing.unit === parsed.unit) {
+              existing.quantity += parsed.quantity;
+            }
           } else {
             ingredientMap.set(key, {
               id: `shop-${key.replace(/\s+/g, '-')}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-              name: ingredientLine.trim(),
+              name: parsed.name,
               category,
               purchased: false,
               fromRecipes: [recipe.name],
+              quantity: parsed.quantity,
+              unit: parsed.unit,
+              rawLine: ingredientLine.trim(),
             });
           }
         });

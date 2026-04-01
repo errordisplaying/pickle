@@ -15,6 +15,8 @@ export const STORAGE_KEYS = {
   ANALYTICS_SESSION: 'souschef_analytics_session',
   ONBOARDING_COMPLETED: 'souschef_onboarding_completed',
   TIP_INDEX: 'souschef_tip_index',
+  VOICE_SPEED: 'souschef_voice_speed',
+  VOICE_NAME: 'souschef_voice_name',
 };
 
 export const INGREDIENT_CATEGORIES: Record<string, IngredientCategory> = {

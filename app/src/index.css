@@ -396,6 +396,55 @@
   animation: timerPulse 1.5s ease-in-out infinite;
 }
 
+/* Voice cooking waveform bars */
+@keyframes voiceBar1 { 0%, 100% { height: 4px; } 50% { height: 14px; } }
+@keyframes voiceBar2 { 0%, 100% { height: 8px; } 50% { height: 16px; } }
+@keyframes voiceBar3 { 0%, 100% { height: 6px; } 50% { height: 12px; } }
+@keyframes voiceBar4 { 0%, 100% { height: 10px; } 50% { height: 14px; } }
+.animate-voice-bar-1 { animation: voiceBar1 0.6s ease-in-out infinite; }
+.animate-voice-bar-2 { animation: voiceBar2 0.5s ease-in-out infinite 0.1s; }
+.animate-voice-bar-3 { animation: voiceBar3 0.7s ease-in-out infinite 0.2s; }
+.animate-voice-bar-4 { animation: voiceBar4 0.55s ease-in-out infinite 0.15s; }
+
+/* Voice cooking step highlight */
+.voice-step-active {
+  border-color: #C49A5C !important;
+  box-shadow: 0 0 0 2px rgba(196, 154, 92, 0.3);
+  animation: voiceStepPulse 2s ease-in-out infinite;
+}
+@keyframes voiceStepPulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(196, 154, 92, 0.3); }
+  50% { box-shadow: 0 0 0 4px rgba(196, 154, 92, 0.15); }
+}
+
+/* Voice glow for active speaking/listening */
+@keyframes voiceGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196, 154, 92, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(196, 154, 92, 0); }
+}
+.animate-voice-glow {
+  animation: voiceGlow 1.5s ease-in-out infinite;
+}
+
+/* Fade in for transcript */
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Indeterminate progress bar */
+@keyframes indeterminateProgress {
+  0% { transform: translateX(-100%); width: 40%; }
+  50% { width: 60%; }
+  100% { transform: translateX(250%); width: 40%; }
+}
+.animate-indeterminate-progress {
+  animation: indeterminateProgress 1.8s ease-in-out infinite;
+}
+
 @keyframes stepLabelIn {
   from { opacity: 0; transform: translateX(-8px); }
   to { opacity: 1; transform: translateX(0); }

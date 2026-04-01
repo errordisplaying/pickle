@@ -1,13 +1,15 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { X, Heart, Calendar, Share2, Clock, Flame, ChefHat, Lightbulb, Printer, ExternalLink, Check, Star, MessageSquare, Timer } from 'lucide-react';
+import { X, Heart, Calendar, Share2, Clock, Flame, ChefHat, Lightbulb, Printer, ExternalLink, Check, Star, MessageSquare, Timer, Volume2 } from 'lucide-react';
 import { toTitleCase, scaleNutrition, scaleIngredientText, extractTimeFromStep } from '@/utils';
 import { SERVING_MULTIPLIERS } from '@/constants';
 import type { SavedRecipe, Toast } from '@/types';
 import ShareCardModal from './ShareCardModal';
 import { useFocusTrap } from '@/hooks/use-focus-trap';
 import { useCookingTimers } from '@/hooks/use-cooking-timers';
+import { useVoiceCooking } from '@/hooks/use-voice-cooking';
 import OptimizedImage from '@/components/OptimizedImage';
 import CookingTimerBar from './CookingTimerBar';
+import VoiceCookingBar from './VoiceCookingBar';
 
 interface RecipeDetailOverlayProps {
   recipe: SavedRecipe;
@@ -40,6 +42,26 @@ export default function RecipeDetailOverlay({
   const [customMinutes, setCustomMinutes] = useState<string>('');
   const notesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { timers, startTimer, pauseTimer, resumeTimer, resetTimer, removeTimer } = useCookingTimers();
+  const voice = useVoiceCooking();
+  const stepRefs = useRef<(HTMLLIElement | null)[]>([]);
+
+  // Auto-scroll to current voice step
+  useEffect(() => {
+    if (voice.isActive && stepRefs.current[voice.currentStep]) {
+      stepRefs.current[voice.currentStep]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [voice.isActive, voice.currentStep]);
+
+  // Auto-check steps as voice advances past them
+  useEffect(() => {
+    if (voice.isActive && voice.currentStep > 0) {
+      setCheckedSteps(prev => {
+        const next = new Set(prev);
+        for (let i = 0; i < voice.currentStep; i++) next.add(i);
+        return next;
+      });
+    }
+  }, [voice.isActive, voice.currentStep]);
 
   // Debounced notes saving
   const saveNotes = useCallback((text: string) => {
@@ -288,18 +310,32 @@ export default function RecipeDetailOverlay({
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-lg font-bold text-[#1A1A1A]">Instructions</h2>
-                  <span className="text-xs text-[#6E6A60]">
-                    {checkedSteps.size}/{recipe.steps.length} done
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {voice.isSupported && recipe.steps.length > 0 && !voice.isActive && (
+                      <button
+                        onClick={() => voice.startVoiceMode(recipe.steps)}
+                        className="flex items-center gap-1 text-xs font-medium text-[#C49A5C] hover:text-[#8B6F3C] transition-colors px-2 py-1 rounded-full bg-[#C49A5C]/10 hover:bg-[#C49A5C]/20"
+                        aria-label="Start voice-guided cooking"
+                      >
+                        <Volume2 className="w-3.5 h-3.5" /> Cook Along
+                      </button>
+                    )}
+                    <span className="text-xs text-[#6E6A60]">
+                      {checkedSteps.size}/{recipe.steps.length} done
+                    </span>
+                  </div>
                 </div>
                 <ol className="space-y-3">
                   {recipe.steps.map((step, i) => (
                     <li
                       key={i}
-                      className={`flex gap-3 p-3 rounded-2xl transition-all duration-200 ${
-                        checkedSteps.has(i)
-                          ? 'bg-[#C49A5C]/8 opacity-60'
-                          : 'bg-white shadow-sm hover:shadow-md'
+                      ref={el => { stepRefs.current[i] = el; }}
+                      className={`flex gap-3 p-3 rounded-2xl border-2 transition-all duration-200 ${
+                        voice.isActive && voice.currentStep === i
+                          ? 'voice-step-active border-[#C49A5C] bg-[#C49A5C]/5'
+                          : checkedSteps.has(i)
+                            ? 'bg-[#C49A5C]/8 opacity-60 border-transparent'
+                            : 'bg-white shadow-sm hover:shadow-md border-transparent'
                       }`}
                     >
                       <span
@@ -446,9 +482,36 @@ export default function RecipeDetailOverlay({
             </div>
           )}
 
+          {/* Voice Cooking Bar */}
+          {voice.isActive && (
+            <div className="sticky bottom-[68px] z-10 mx-4 mb-2">
+              <VoiceCookingBar
+                currentStep={voice.currentStep}
+                totalSteps={voice.totalSteps}
+                isSpeaking={voice.isSpeaking}
+                isPaused={voice.isPaused}
+                rate={voice.rate}
+                onNext={voice.nextStep}
+                onPrev={voice.prevStep}
+                onRepeat={voice.repeatStep}
+                onPause={voice.pauseSpeech}
+                onResume={voice.resumeSpeech}
+                onStop={voice.stopVoiceMode}
+                onSetRate={voice.setRate}
+                availableVoices={voice.availableVoices}
+                selectedVoice={voice.selectedVoice}
+                onSelectVoice={voice.setSelectedVoice}
+                isListening={voice.isListening}
+                isListeningSupported={voice.isListeningSupported}
+                onToggleListening={voice.toggleListening}
+                lastHeard={voice.lastHeard}
+              />
+            </div>
+          )}
+
           {/* Active Cooking Timers */}
           {timers.length > 0 && (
-            <div className="sticky bottom-[68px] z-10 mx-4 mb-2">
+            <div className={`sticky ${voice.isActive ? 'bottom-[188px]' : 'bottom-[68px]'} z-10 mx-4 mb-2`}>
               <CookingTimerBar
                 timers={timers}
                 onPause={pauseTimer}
@@ -459,8 +522,8 @@ export default function RecipeDetailOverlay({
             </div>
           )}
 
-          {/* Bottom padding for action bar + optional timer bar */}
-          <div className={timers.length > 0 ? 'h-32' : 'h-20'} />
+          {/* Bottom padding for action bar + optional timer/voice bars */}
+          <div className={(voice.isActive && timers.length > 0) ? 'h-52' : (voice.isActive || timers.length > 0) ? 'h-32' : 'h-20'} />
         </div>
 
         {/* Sticky Action Bar */}

@@ -1,11 +1,15 @@
-import { useState, useCallback } from 'react';
-import { X, ShoppingCart, Check, Lightbulb } from 'lucide-react';
+import { useState, useCallback, useRef } from 'react';
+import { X, ShoppingCart, Check, Lightbulb, ExternalLink, Plus, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ShoppingItem, IngredientCategory } from '@/types';
 import { STORAGE_KEYS } from '@/constants';
 import { cookingTips } from '@/data';
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
 import { useFocusTrap } from '@/hooks/use-focus-trap';
+import { CHECKOUT_PROVIDERS, buildSingleItemUrl, getUnpurchasedCount } from '@/utils/checkout';
+import { formatQuantity, parseIngredientLine } from '@/utils';
+import { categorizeIngredient } from '@/constants';
+import { trackEvent, EVENTS } from '@/utils/analytics';
 
 interface ShoppingListOverlayProps {
   shoppingList: ShoppingItem[];
@@ -15,6 +19,8 @@ interface ShoppingListOverlayProps {
   onClearAll: () => void;
   onOpenPlanner: () => void;
   onClose: () => void;
+  onAddItem?: (item: ShoppingItem) => void;
+  onEditItem?: (id: string, updates: Partial<ShoppingItem>) => void;
 }
 
 export default function ShoppingListOverlay({
@@ -25,12 +31,20 @@ export default function ShoppingListOverlay({
   onClearAll,
   onOpenPlanner,
   onClose,
+  onAddItem,
+  onEditItem,
 }: ShoppingListOverlayProps) {
   const [closing, setClosing] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [newItemText, setNewItemText] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+  const addInputRef = useRef<HTMLInputElement>(null);
   const handleClose = useCallback(() => {
     setClosing(true);
     setTimeout(onClose, 250);
   }, [onClose]);
+  const unpurchasedCount = getUnpurchasedCount(shoppingList);
 
   const [tipIndex] = useState(() => {
     const stored = parseInt(localStorage.getItem(STORAGE_KEYS.TIP_INDEX) || '0', 10);
@@ -73,6 +87,40 @@ export default function ShoppingListOverlay({
             <Button onClick={onClearAll} variant="outline" className="rounded-full text-xs text-red-500" size="sm">
               Clear All
             </Button>
+          )}
+          {unpurchasedCount > 0 && (
+            <div className="relative ml-auto sm:ml-0">
+              <Button
+                onClick={() => setShowCheckout(!showCheckout)}
+                className="bg-[#1A1A1A] text-white hover:bg-[#333] rounded-full text-xs gap-1"
+                size="sm"
+              >
+                <ExternalLink className="w-3 h-3" /> Order Groceries
+              </Button>
+              {showCheckout && (
+                <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-[#E8E6DC] overflow-hidden z-50 w-56">
+                  <div className="p-2">
+                    <p className="text-[10px] text-[#6E6A60] px-3 py-1.5">Send {unpurchasedCount} items to:</p>
+                    {CHECKOUT_PROVIDERS.map(provider => (
+                      <button
+                        key={provider.id}
+                        onClick={() => {
+                          const url = provider.buildCartUrl(shoppingList);
+                          window.open(url, '_blank', 'noopener');
+                          trackEvent(EVENTS.RECIPE_SEARCH, { checkoutProvider: provider.id, itemCount: unpurchasedCount });
+                          setShowCheckout(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#1A1A1A] hover:bg-[#F4F2EA] transition-colors text-left"
+                      >
+                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: provider.color }} />
+                        {provider.name}
+                        <ExternalLink className="w-3 h-3 text-[#6E6A60] ml-auto" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
           <span className="text-xs text-[#6E6A60] sm:hidden ml-auto">
             {shoppingList.filter(i => !i.purchased).length} remaining
@@ -136,6 +184,57 @@ export default function ShoppingListOverlay({
                 </div>
               </div>
 
+              {/* Add custom item */}
+              {onAddItem && (
+                <div className="mb-6 flex items-center gap-2">
+                  <input
+                    ref={addInputRef}
+                    type="text"
+                    value={newItemText}
+                    onChange={(e) => setNewItemText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newItemText.trim()) {
+                        const parsed = parseIngredientLine(newItemText);
+                        onAddItem({
+                          id: `shop-custom-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                          name: parsed.name,
+                          category: categorizeIngredient(parsed.name),
+                          purchased: false,
+                          fromRecipes: ['Custom'],
+                          quantity: parsed.quantity,
+                          unit: parsed.unit,
+                          rawLine: newItemText.trim(),
+                        });
+                        setNewItemText('');
+                      }
+                    }}
+                    placeholder="Add item (e.g. 2 cups flour)"
+                    className="flex-1 px-4 py-2.5 rounded-2xl border border-[#E8E6DC] bg-white text-sm text-[#1A1A1A] placeholder:text-[#6E6A60]/50 focus:outline-none focus:ring-2 focus:ring-[#C49A5C]/30"
+                  />
+                  <button
+                    onClick={() => {
+                      if (!newItemText.trim()) { addInputRef.current?.focus(); return; }
+                      const parsed = parseIngredientLine(newItemText);
+                      onAddItem({
+                        id: `shop-custom-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                        name: parsed.name,
+                        category: categorizeIngredient(parsed.name),
+                        purchased: false,
+                        fromRecipes: ['Custom'],
+                        quantity: parsed.quantity,
+                        unit: parsed.unit,
+                        rawLine: newItemText.trim(),
+                      });
+                      setNewItemText('');
+                    }}
+                    className="p-2.5 rounded-2xl bg-[#C49A5C] text-white hover:bg-[#8B6F3C] transition-colors flex-shrink-0"
+                    aria-label="Add item"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
               {(['Produce', 'Protein', 'Dairy', 'Pantry', 'Spices', 'Other'] as IngredientCategory[]).map(category => {
                 const items = shoppingList.filter(i => i.category === category);
                 if (items.length === 0) return null;
@@ -148,25 +247,84 @@ export default function ShoppingListOverlay({
                     </h3>
                     <div className="space-y-1.5">
                       {items.map(item => (
-                        <button
-                          key={item.id}
-                          onClick={() => onToggleItem(item.id)}
-                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${
-                            item.purchased ? 'bg-[#E8E6DC]/50 opacity-60' : 'bg-white hover:bg-[#F4F2EA]'
-                          } border border-black/5`}
-                        >
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                            item.purchased ? 'bg-[#8B9E6B] border-[#8B9E6B]' : 'border-[#C49A5C]/30'
-                          }`}>
-                            {item.purchased && <Check className="w-3 h-3 text-white" />}
+                        editingId === item.id && onEditItem ? (
+                          <div key={item.id} className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-[#C49A5C]/30">
+                            <input
+                              autoFocus
+                              type="text"
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && editText.trim()) {
+                                  const parsed = parseIngredientLine(editText);
+                                  onEditItem(item.id, { name: parsed.name, quantity: parsed.quantity, unit: parsed.unit, rawLine: editText.trim() });
+                                  setEditingId(null);
+                                } else if (e.key === 'Escape') {
+                                  setEditingId(null);
+                                }
+                              }}
+                              onBlur={() => {
+                                if (editText.trim()) {
+                                  const parsed = parseIngredientLine(editText);
+                                  onEditItem(item.id, { name: parsed.name, quantity: parsed.quantity, unit: parsed.unit, rawLine: editText.trim() });
+                                }
+                                setEditingId(null);
+                              }}
+                              className="flex-1 text-sm text-[#1A1A1A] bg-transparent focus:outline-none"
+                            />
+                            <span className="text-[10px] text-[#6E6A60]">Enter to save</span>
                           </div>
-                          <span className={`text-sm font-medium flex-1 text-left ${item.purchased ? 'line-through text-[#6E6A60]' : 'text-[#1A1A1A]'}`}>
-                            {item.name}
-                          </span>
-                          <span className="text-[10px] text-[#6E6A60]">
-                            {item.fromRecipes.length} recipe{item.fromRecipes.length > 1 ? 's' : ''}
-                          </span>
-                        </button>
+                        ) : (
+                          <button
+                            key={item.id}
+                            onClick={() => onToggleItem(item.id)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${
+                              item.purchased ? 'bg-[#E8E6DC]/50 opacity-60' : 'bg-white hover:bg-[#F4F2EA]'
+                            } border border-black/5`}
+                          >
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                              item.purchased ? 'bg-[#8B9E6B] border-[#8B9E6B]' : 'border-[#C49A5C]/30'
+                            }`}>
+                              {item.purchased && <Check className="w-3 h-3 text-white" />}
+                            </div>
+                            <span className={`text-sm font-medium flex-1 text-left ${item.purchased ? 'line-through text-[#6E6A60]' : 'text-[#1A1A1A]'}`}>
+                              {item.quantity != null && (
+                                <span className="font-bold text-[#C49A5C] mr-1">
+                                  {formatQuantity(item.quantity)}{item.unit ? ` ${item.unit}` : ''}
+                                </span>
+                              )}
+                              {item.name}
+                            </span>
+                            <span className="text-[10px] text-[#6E6A60]">
+                              {item.fromRecipes.length} recipe{item.fromRecipes.length > 1 ? 's' : ''}
+                            </span>
+                            {!item.purchased && onEditItem && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditText(item.rawLine || `${item.quantity != null ? formatQuantity(item.quantity) : ''}${item.unit ? ` ${item.unit}` : ''} ${item.name}`.trim());
+                                  setEditingId(item.id);
+                                }}
+                                className="p-1 rounded-full hover:bg-[#C49A5C]/10 text-[#6E6A60] hover:text-[#C49A5C] transition-colors flex-shrink-0"
+                                aria-label={`Edit ${item.name}`}
+                              >
+                                <Pencil className="w-3 h-3" />
+                              </button>
+                            )}
+                            {!item.purchased && (
+                              <a
+                                href={buildSingleItemUrl(item)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="p-1 rounded-full hover:bg-[#C49A5C]/10 text-[#6E6A60] hover:text-[#C49A5C] transition-colors flex-shrink-0"
+                                aria-label={`Find ${item.name} on Instacart`}
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                          </button>
+                        )
                       ))}
                     </div>
                   </div>

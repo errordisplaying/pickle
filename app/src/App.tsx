@@ -46,6 +46,7 @@ const NutritionGoalsModal = lazy(() => import('@/components/NutritionGoalsModal'
 const AiMealPlanModal = lazy(() => import('@/components/AiMealPlanModal'));
 const ShoppingListOverlay = lazy(() => import('@/components/ShoppingListOverlay'));
 const AuthModal = lazy(() => import('@/components/AuthModal'));
+const ImportPreviewModal = lazy(() => import('@/components/ImportPreviewModal'));
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -92,9 +93,10 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [recipeData, setRecipeData] = useState<any>(null);
   const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
+  const [importPreviewRecipe, setImportPreviewRecipe] = useState<SavedRecipe | null>(null);
 
   // Test Kitchen mode (kept at App level for Navbar)
-  const [mode, setMode] = useState<'recipe' | 'testKitchen'>('recipe');
+  const [mode, setMode] = useState<'recipe' | 'testKitchen' | 'import'>('recipe');
 
   // Planner state (persisted to localStorage)
   const [plannerOpen, setPlannerOpen] = useState(false);
@@ -829,6 +831,14 @@ function App() {
     showToast('Shopping list cleared', 'info');
   }, [showToast]);
 
+  const addShoppingItem = useCallback((item: ShoppingItem) => {
+    setShoppingList(prev => [...prev, item]);
+  }, []);
+
+  const editShoppingItem = useCallback((id: string, updates: Partial<ShoppingItem>) => {
+    setShoppingList(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
+  }, []);
+
   // Recipe Finder Functions
   const getDemoRecipes = (ingredientList: string) => {
     const ingredientsLower = ingredientList.toLowerCase();
@@ -969,6 +979,96 @@ function App() {
     setLoading(false);
   };
 
+  const importRecipeFromUrl = async (url: string) => {
+    // Duplicate detection: check if URL already saved
+    const existingByUrl = favorites.find(f => f.sourceUrl && f.sourceUrl === url);
+    if (existingByUrl) {
+      showToast(`"${existingByUrl.name}" is already in your collection.`, 'info');
+      setSelectedGalleryRecipe(existingByUrl);
+      return;
+    }
+
+    setLoading(true);
+    trackEvent(EVENTS.RECIPE_SEARCH, { importUrl: url });
+    const apiUrl = import.meta.env.VITE_API_URL || '';
+
+    // AbortController with 20s timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+
+    try {
+      const response = await fetch(`${apiUrl}/api/scrape-url`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 429) {
+          showToast('Too many imports — try again in a minute.', 'warning');
+        } else if (response.status === 404) {
+          showToast(data.error || 'No recipe found on that page.', 'warning');
+        } else {
+          showToast(data.error || 'Failed to import recipe.', 'error');
+        }
+        setLoading(false);
+        return;
+      }
+
+      const { recipe } = await response.json();
+      const normalized = normalizeScrapedRecipe(recipe, 'scraped');
+
+      // Show preview modal instead of immediately opening
+      setImportPreviewRecipe(normalized);
+    } catch (error: any) {
+      clearTimeout(timeout);
+      console.warn('Import failed:', error);
+      if (error.name === 'AbortError') {
+        showToast('The recipe page took too long to respond. Try again.', 'warning');
+      } else {
+        showToast("Can't reach recipe server. Check your connection.", 'error');
+      }
+    }
+
+    setLoading(false);
+  };
+
+  const confirmImportPreview = (recipe: SavedRecipe) => {
+    setImportPreviewRecipe(null);
+    setSelectedGalleryRecipe(recipe);
+    showToast(`Imported "${recipe.name}" successfully!`, 'success');
+
+    // Track for planner suggestions
+    setRecentRecipes(prev => {
+      const combined = [recipe, ...prev];
+      const seen = new Set<string>();
+      return combined.filter((r: SavedRecipe) => {
+        const key = r.name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).slice(0, 20);
+    });
+  };
+
+  // Fire-and-forget: persist recipe to public_recipes for SEO permalinks
+  const persistRecipeForSeo = useCallback((recipe: SavedRecipe) => {
+    const apiUrl = import.meta.env.VITE_API_URL || '';
+    fetch(`${apiUrl}/api/recipes/public`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipe }),
+    }).catch(() => {}); // silent — SEO persistence is best-effort
+  }, []);
+
+  // Auto-persist when viewing or favoriting recipes
+  useEffect(() => {
+    if (selectedGalleryRecipe) persistRecipeForSeo(selectedGalleryRecipe);
+  }, [selectedGalleryRecipe, persistRecipeForSeo]);
+
   return (
     <div ref={mainRef} className="relative bg-warm-white">
       {/* Skip to main content — accessibility */}
@@ -1045,6 +1145,7 @@ function App() {
         onAddToPlanner={(recipe) => { setRecipeToAssign(recipe); setExpandedRecipe(null); setRecipeData(null); setPlannerOpen(true); }}
         smartSearchEnabled={smartSearchEnabled}
         onToggleSmartSearch={() => setSmartSearchEnabled(prev => !prev)}
+        onImportUrl={importRecipeFromUrl}
       />
       </ErrorBoundary>
 
@@ -1254,6 +1355,8 @@ function App() {
           onClearAll={clearShoppingList}
           onOpenPlanner={() => { setShoppingListOpen(false); setPlannerOpen(true); }}
           onClose={() => setShoppingListOpen(false)}
+          onAddItem={addShoppingItem}
+          onEditItem={editShoppingItem}
         />
         </Suspense>
         </ErrorBoundary>,
@@ -1270,6 +1373,18 @@ function App() {
         />
         </Suspense>
         </ErrorBoundary>,
+        document.body
+      )}
+
+      {/* Import Preview Modal */}
+      {importPreviewRecipe && createPortal(
+        <Suspense fallback={null}>
+        <ImportPreviewModal
+          recipe={importPreviewRecipe}
+          onConfirm={confirmImportPreview}
+          onCancel={() => setImportPreviewRecipe(null)}
+        />
+        </Suspense>,
         document.body
       )}
 
