@@ -727,3 +727,135 @@ export async function generateRecipeCard(recipe: {
     );
   });
 }
+
+/** Generate a vertical 1080×1920 card optimized for Instagram Stories / TikTok */
+export async function generateStoryCard(recipe: {
+  name: string;
+  image?: string;
+  prepTime?: string;
+  cookTime?: string;
+  nutrition?: { calories: number; protein: string; carbs: string; fat: string };
+  ingredients?: string[];
+}): Promise<Blob> {
+  const W = 1080;
+  const H = 1920;
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d')!;
+
+  // ── Background
+  ctx.fillStyle = '#F7F3EB';
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Top image area (55% of height)
+  const imgH = Math.round(H * 0.55);
+  let hasImage = false;
+
+  if (recipe.image) {
+    try {
+      const img = await loadImage(recipe.image);
+      const scale = Math.max(W / img.width, imgH / img.height);
+      const sw = W / scale;
+      const sh = imgH / scale;
+      const sx = (img.width - sw) / 2;
+      const sy = (img.height - sh) / 2;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, imgH);
+      hasImage = true;
+    } catch { /* fallback */ }
+  }
+
+  if (!hasImage) {
+    ctx.fillStyle = '#E8E6DC';
+    ctx.fillRect(0, 0, W, imgH);
+    ctx.font = '120px serif';
+    ctx.fillStyle = '#C49A5C';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🍽', W / 2, imgH / 2);
+  }
+
+  // ── Gradient overlay on image bottom
+  const grad = ctx.createLinearGradient(0, imgH - 200, 0, imgH);
+  grad.addColorStop(0, 'rgba(247,243,235,0)');
+  grad.addColorStop(1, '#F7F3EB');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, imgH - 200, W, 200);
+
+  // ── Content area
+  const px = 72;
+  let y = imgH + 24;
+
+  // Recipe name
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#1A1A1A';
+  ctx.font = 'bold 64px Georgia, "Times New Roman", serif';
+  const nameLines = wrapText(ctx, toTitleCase(recipe.name), W - px * 2);
+  for (const line of nameLines.slice(0, 3)) {
+    ctx.fillText(line, px, y);
+    y += 80;
+  }
+
+  // Divider
+  y += 16;
+  ctx.strokeStyle = '#C49A5C';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(px, y);
+  ctx.lineTo(W - px, y);
+  ctx.stroke();
+  y += 32;
+
+  // Info row
+  ctx.font = '36px -apple-system, "Segoe UI", sans-serif';
+  ctx.fillStyle = '#6E6A60';
+  const infoParts: string[] = [];
+  if (recipe.prepTime && recipe.prepTime !== 'N/A') infoParts.push(`⏱ ${recipe.prepTime}`);
+  if (recipe.nutrition && recipe.nutrition.calories > 0) infoParts.push(`🔥 ${recipe.nutrition.calories} cal`);
+  if (infoParts.length > 0) {
+    ctx.fillText(infoParts.join('   •   '), px, y);
+    y += 56;
+  }
+
+  // Macros
+  if (recipe.nutrition && recipe.nutrition.calories > 0) {
+    ctx.font = '32px -apple-system, "Segoe UI", sans-serif';
+    ctx.fillStyle = '#6E6A60';
+    ctx.fillText(`P: ${recipe.nutrition.protein}  •  C: ${recipe.nutrition.carbs}  •  F: ${recipe.nutrition.fat}`, px, y);
+    y += 52;
+  }
+
+  // Ingredients
+  if (recipe.ingredients && recipe.ingredients.length > 0) {
+    y += 16;
+    ctx.font = '30px -apple-system, "Segoe UI", sans-serif';
+    ctx.fillStyle = '#6E6A60';
+    const maxIng = Math.min(recipe.ingredients.length, 6);
+    for (let i = 0; i < maxIng; i++) {
+      const trimmed = recipe.ingredients[i].length > 40 ? recipe.ingredients[i].slice(0, 37) + '...' : recipe.ingredients[i];
+      ctx.fillText(`•  ${trimmed}`, px, y);
+      y += 44;
+    }
+    if (recipe.ingredients.length > 6) {
+      ctx.fillText(`  + ${recipe.ingredients.length - 6} more`, px, y);
+    }
+  }
+
+  // ── Bottom bar
+  const barH = 80;
+  ctx.fillStyle = '#C49A5C';
+  ctx.fillRect(0, H - barH, W, barH);
+  ctx.font = 'bold 30px -apple-system, "Segoe UI", sans-serif';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('chickpea.kitchen', W / 2, H - barH / 2);
+
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob failed'))),
+      'image/png'
+    );
+  });
+}

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
-import { X, Download, Copy, Share2, ExternalLink, FileText } from 'lucide-react';
-import { generateRecipeCard, formatRecipeShareText, toTitleCase } from '@/utils';
+import { X, Download, Copy, Share2, ExternalLink, FileText, Link2, Check } from 'lucide-react';
+import { generateRecipeCard, generateStoryCard, formatRecipeShareText, toTitleCase } from '@/utils';
 import type { SavedRecipe, Toast } from '@/types';
 
 interface ShareCardModalProps {
@@ -9,17 +9,26 @@ interface ShareCardModalProps {
   showToast: (message: string, type: Toast['type']) => void;
 }
 
+type CardFormat = 'social' | 'story';
+
 export default function ShareCardModal({ recipe, onClose, showToast }: ShareCardModalProps) {
+  const [cardFormat, setCardFormat] = useState<CardFormat>('social');
   const [cardUrl, setCardUrl] = useState<string | null>(null);
   const [cardBlob, setCardBlob] = useState<Blob | null>(null);
   const [generating, setGenerating] = useState(true);
   const blobUrlRef = useRef<string | null>(null);
 
-  // Generate card on mount
+  // Generate card when format changes
   useEffect(() => {
     let cancelled = false;
+    setGenerating(true);
+    setCardUrl(null);
+    setCardBlob(null);
+    if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
 
-    generateRecipeCard(recipe)
+    const generator = cardFormat === 'story' ? generateStoryCard : generateRecipeCard;
+
+    generator(recipe)
       .then((blob) => {
         if (cancelled) return;
         const url = URL.createObjectURL(blob);
@@ -38,7 +47,7 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
       cancelled = true;
       if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
     };
-  }, [recipe, showToast]);
+  }, [recipe, showToast, cardFormat]);
 
   // Close on Escape
   useEffect(() => {
@@ -53,7 +62,8 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
     if (!cardUrl) return;
     const a = document.createElement('a');
     a.href = cardUrl;
-    a.download = `${recipe.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-chickpea.png`;
+    const suffix = cardFormat === 'story' ? '-story' : '';
+    a.download = `${recipe.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}${suffix}-chickpea.png`;
     a.click();
     showToast('Card downloaded!', 'success');
   };
@@ -93,12 +103,22 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
     showToast('Recipe text copied to clipboard!', 'success');
   };
 
+  const [linkCopied, setLinkCopied] = useState(false);
+
   const recipeName = toTitleCase(recipe.name);
-  const shareUrl = recipe.sourceUrl || 'https://chickpea.kitchen';
+  const recipePermalink = `https://chickpea.kitchen/recipe/${recipe.id}`;
+  const shareUrl = recipePermalink;
   const shareText = encodeURIComponent(`${recipeName} — found on chickpea.kitchen`);
   const encodedUrl = encodeURIComponent(shareUrl);
 
   const canShare = typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(recipePermalink);
+    setLinkCopied(true);
+    showToast('Link copied!', 'success');
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
 
   return (
     <div
@@ -125,9 +145,35 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
           </button>
         </div>
 
+        {/* Card format toggle */}
+        <div className="px-6 pb-3 flex gap-2">
+          <button
+            onClick={() => setCardFormat('social')}
+            className={`flex-1 py-2 rounded-full text-xs font-semibold transition-all ${
+              cardFormat === 'social'
+                ? 'bg-[#C49A5C] text-white'
+                : 'bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#DAD6CC]'
+            }`}
+          >
+            Social Post (16:9)
+          </button>
+          <button
+            onClick={() => setCardFormat('story')}
+            className={`flex-1 py-2 rounded-full text-xs font-semibold transition-all ${
+              cardFormat === 'story'
+                ? 'bg-[#C49A5C] text-white'
+                : 'bg-[#E8E6DC] text-[#1A1A1A] hover:bg-[#DAD6CC]'
+            }`}
+          >
+            Story / Reel (9:16)
+          </button>
+        </div>
+
         {/* Card preview */}
         <div className="px-6 pb-4">
-          <div className="rounded-[16px] overflow-hidden shadow-md border border-[#E8E6DC] bg-white">
+          <div className={`rounded-[16px] overflow-hidden shadow-md border border-[#E8E6DC] bg-white ${
+            cardFormat === 'story' ? 'max-h-[320px]' : ''
+          }`}>
             {generating ? (
               <div className="flex items-center justify-center h-[180px] text-[#6E6A60]">
                 <div className="w-6 h-6 border-2 border-[#C49A5C] border-t-transparent rounded-full animate-spin mr-3" />
@@ -137,7 +183,7 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
               <img
                 src={cardUrl}
                 alt={`Share card for ${recipeName}`}
-                className="w-full h-auto"
+                className={`w-full h-auto ${cardFormat === 'story' ? 'object-contain max-h-[320px] mx-auto' : ''}`}
               />
             ) : (
               <div className="flex items-center justify-center h-[180px] text-[#6E6A60]">
@@ -148,7 +194,7 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
         </div>
 
         {/* Action buttons */}
-        <div className="px-6 pb-4 flex flex-wrap gap-2">
+        <div className="px-6 pb-3 flex flex-wrap gap-2">
           <button
             onClick={handleDownload}
             disabled={!cardUrl}
@@ -167,16 +213,13 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
             Copy Image
           </button>
 
-          {canShare && (
-            <button
-              onClick={handleNativeShare}
-              disabled={!cardBlob}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#1A1A1A] border border-[#E8E6DC] rounded-full text-sm font-semibold hover:border-[#C49A5C]/40 transition-colors disabled:opacity-40 btn-press"
-            >
-              <Share2 className="w-4 h-4" />
-              Share
-            </button>
-          )}
+          <button
+            onClick={handleCopyLink}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#1A1A1A] border border-[#E8E6DC] rounded-full text-sm font-semibold hover:border-[#C49A5C]/40 transition-colors btn-press"
+          >
+            {linkCopied ? <Check className="w-4 h-4 text-[#8B9E6B]" /> : <Link2 className="w-4 h-4" />}
+            {linkCopied ? 'Copied!' : 'Copy Link'}
+          </button>
 
           <button
             onClick={handleCopyText}
@@ -185,12 +228,23 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
             <FileText className="w-4 h-4" />
             Copy Text
           </button>
+
+          {canShare && (
+            <button
+              onClick={handleNativeShare}
+              disabled={!cardBlob}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white text-[#1A1A1A] border border-[#E8E6DC] rounded-full text-sm font-semibold hover:border-[#C49A5C]/40 transition-colors disabled:opacity-40 btn-press"
+            >
+              <Share2 className="w-4 h-4" />
+              More...
+            </button>
+          )}
         </div>
 
         {/* Social platform links */}
         <div className="px-6 pb-6">
           <p className="text-xs text-[#6E6A60] mb-2 font-medium uppercase tracking-wider">Share to</p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <a
               href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodedUrl}&hashtags=chickpea`}
               target="_blank"
@@ -199,6 +253,15 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Twitter
+            </a>
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${shareText}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#1877F2]/10 text-[#1877F2] rounded-full text-sm font-semibold hover:bg-[#1877F2]/20 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Facebook
             </a>
             <a
               href={`https://wa.me/?text=${shareText}%20${encodedUrl}`}
@@ -217,6 +280,20 @@ export default function ShareCardModal({ recipe, onClose, showToast }: ShareCard
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Pinterest
+            </a>
+            <a
+              href={`sms:?body=${shareText}%20${encodedUrl}`}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#34C759]/10 text-[#34C759] rounded-full text-sm font-semibold hover:bg-[#34C759]/20 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              iMessage
+            </a>
+            <a
+              href={`mailto:?subject=${encodeURIComponent(recipeName + ' — chickpea.kitchen')}&body=${shareText}%20${encodedUrl}`}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#6E6A60]/10 text-[#6E6A60] rounded-full text-sm font-semibold hover:bg-[#6E6A60]/20 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Email
             </a>
           </div>
         </div>
